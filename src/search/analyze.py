@@ -1,7 +1,7 @@
 import torch
 import numpy as np
-from numpy.linalg import eigvals
 import torch.nn as nn
+from numpy.linalg import eigvals
 from torch.autograd import Variable
 from copy import deepcopy
 

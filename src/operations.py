@@ -39,26 +39,6 @@ class NoiseOp(nn.Module):
         return noise
 
 
-class _NoiseOp(nn.Module):
-    def __init__(self, stride, mean, std):
-        super(_NoiseOp, self).__init__()
-        self.stride = stride
-        self.mean = mean
-        self.std = std
-
-    def forward(self, x):
-        if self.stride != 1:
-          x_new = x[:,:,::self.stride,::self.stride]
-        else:
-          x_new = x
-        noise = Variable(x_new.data.new(x_new.size()).normal_(self.mean, self.std))
-        print('max x: ', np.max(x_new.cpu().data.numpy()))
-        print('min x: ', np.min(x_new.cpu().data.numpy()))
-        print('max noise: ', np.max(noise.cpu().data.numpy()))
-        print('min noise: ', np.min(noise.cpu().data.numpy()))
-        return x_new + noise
-
-
 class ReLUConvBN(nn.Module):
 
   def __init__(self, C_in, C_out, kernel_size, stride, padding, affine=True):
@@ -71,6 +51,7 @@ class ReLUConvBN(nn.Module):
 
   def forward(self, x):
     return self.op(x)
+
 
 class DilConv(nn.Module):
 

@@ -2,11 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
-from operations import *
 from torch.autograd import Variable
-#from genotypes import PRIMITIVES
-from genotypes import Genotype
-from utils import drop_path
+
+from src.operations import *
+from src.utils import drop_path, Genotype
 
 
 class MixedOp(nn.Module):

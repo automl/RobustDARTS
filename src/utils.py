@@ -4,7 +4,22 @@ import torch
 import shutil
 import torchvision.transforms as transforms
 from torch.autograd import Variable
+from collections import namedtuple
 
+
+Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
+
+PRIMITIVES = [
+    'none',
+    'noise',
+    'max_pool_3x3',
+    'avg_pool_3x3',
+    'skip_connect',
+    'sep_conv_3x3',
+    'sep_conv_5x5',
+    'dil_conv_3x3',
+    'dil_conv_5x5'
+]
 
 class AvgrageMeter(object):
 
@@ -163,3 +178,8 @@ def create_exp_dir(path, scripts_to_save=None):
       dst_file = os.path.join(path, 'scripts', os.path.basename(script))
       shutil.copyfile(script, dst_file)
 
+
+def print_args(args):
+    for arg, val in args.__dict__.items():
+        print(arg + '.' * (50 - len(arg) - len(str(val))) + str(val))
+    print()

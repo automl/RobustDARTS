@@ -1,10 +1,8 @@
 import os
 import sys
-import time
 import glob
 import numpy as np
 import torch
-import utils
 import json
 import codecs
 import logging
@@ -14,65 +12,22 @@ import torch.utils
 import torch.nn.functional as F
 import torchvision.datasets as dset
 import torch.backends.cudnn as cudnn
-
 from copy import deepcopy
-from collections import OrderedDict
 from torch.autograd import Variable
-from model_search import Network
-from architect import Architect
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from genotypes import PRIMITIVES, primitives_dict
 
-from analyze import Analyzer
-#import hessianflow as hf
-import numpy.linalg as LA
+sys.path.insert(0, '../../RobustDARTS')
+
+from src import utils
+from src.search.model_search import Network
+from src.search.architect import Architect
+from src.spaces import spaces_dict
+from src.search.analyze import Analyzer
+from src.search.args import Helper
 
 
-parser = argparse.ArgumentParser("cifar")
-parser.add_argument('--data', type=str, default='/home/zelaa/NIPS19/data', help='location of the data corpus')
-parser.add_argument('--batch_size', type=int, default=64, help='batch size')
-parser.add_argument('--learning_rate', type=float, default=0.025, help='init learning rate')
-parser.add_argument('--learning_rate_min', type=float, default=0.001, help='min learning rate')
-parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
-parser.add_argument('--weight_decay', type=float, default=3e-4, help='weight decay')
-parser.add_argument('--report_freq', type=float, default=50, help='report frequency')
-parser.add_argument('--report_freq_hessian', type=float, default=50, help='report frequency hessian')
-parser.add_argument('--gpu', type=int, default=0, help='gpu device id')
-parser.add_argument('--epochs', type=int, default=50, help='num of training epochs')
-parser.add_argument('--init_channels', type=int, default=16, help='num of init channels')
-parser.add_argument('--layers', type=int, default=8, help='total number of layers')
-parser.add_argument('--nodes', type=int, default=4, help='number of intermediate nodes per cell')
-parser.add_argument('--model_path', type=str, default='saved_models', help='path to save the model')
-parser.add_argument('--cutout', action='store_true', default=False, help='use cutout')
-parser.add_argument('--cutout_length', type=int, default=16, help='cutout length')
-parser.add_argument('--cutout_prob', type=float, default=1.0, help='cutout probability')
-parser.add_argument('--drop_path_prob', type=float, default=0.2, help='drop path probability')
-parser.add_argument('--save', type=str, default='EXP', help='experiment name')
-parser.add_argument('--seed', type=int, default=2, help='random seed')
-parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping')
-parser.add_argument('--train_portion', type=float, default=0.5, help='portion of training data')
-parser.add_argument('--unrolled', action='store_true', default=False, help='use one-step unrolled validation loss')
-parser.add_argument('--debug', action='store_true', default=False, help='use one-step unrolled validation loss')
-parser.add_argument('--resume', action='store_true', default=False, help='use one-step unrolled validation loss')
-parser.add_argument('--arch_learning_rate', type=float, default=3e-4, help='learning rate for arch encoding')
-parser.add_argument('--arch_weight_decay', type=float, default=1e-3, help='weight decay for arch encoding')
-parser.add_argument('--job_id', type=int, default=1, help='SLURM_ARRAY_JOB_ID number')
-parser.add_argument('--task_id', type=int, default=1, help='SLURM_ARRAY_TASK_ID number')
-
-parser.add_argument('--regularize', action='store_true', default=False,
-                    help='use co and droppath')
-parser.add_argument('--space', type=str, default='S1', help='space index')
-parser.add_argument('--dataset', type=str, default='cifar10', help='dataset')
-args = parser.parse_args()
-
-args.save = '../search/{}/{}/{}-{}-{}-{}'.format(args.space,
-                                                 args.dataset,
-                                                 args.unrolled,
-                                                 args.drop_path_prob,
-                                                 args.weight_decay,
-                                                 args.job_id)
-
-utils.create_exp_dir(args.save)#, scripts_to_save=glob.glob('*.py'))
+helper = Helper()
+args = helper.config
 
 log_format = '%(asctime)s %(message)s'
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
@@ -81,12 +36,8 @@ fh = logging.FileHandler(os.path.join(args.save, 'log_{}.txt'.format(args.task_i
 fh.setFormatter(logging.Formatter(log_format))
 logging.getLogger().addHandler(fh)
 
-if args.dataset != 'cifar100':
-  CIFAR_CLASSES = 10
-else:
-  CIFAR_CLASSES = 100
 
-def main(primitives, iteration, final_genotype=None):
+def main(primitives):
   if not torch.cuda.is_available():
     logging.info('no gpu device available')
     sys.exit(1)
@@ -98,11 +49,11 @@ def main(primitives, iteration, final_genotype=None):
   cudnn.enabled=True
   torch.cuda.manual_seed(args.seed)
   logging.info('gpu device = %d' % args.gpu)
-  logging.info("args = %s", args)
 
   criterion = nn.CrossEntropyLoss()
   criterion = criterion.cuda()
-  model = Network(args.init_channels, CIFAR_CLASSES, args.layers, criterion,
+
+  model = Network(args.init_channels, args.n_classes, args.layers, criterion,
                   primitives, steps=args.nodes)
   model = model.cuda()
   logging.info("param size = %fMB", utils.count_parameters_in_MB(model))
@@ -113,36 +64,14 @@ def main(primitives, iteration, final_genotype=None):
       momentum=args.momentum,
       weight_decay=args.weight_decay)
 
-  if args.dataset == 'cifar10':
-    train_transform, valid_transform = utils._data_transforms_cifar10(args)
-    train_data = dset.CIFAR10(root=args.data, train=True, download=True, transform=train_transform)
-  elif args.dataset == 'cifar100':
-    train_transform, valid_transform = utils._data_transforms_cifar100(args)
-    train_data = dset.CIFAR100(root=args.data, train=True, download=True, transform=train_transform)
-  elif args.dataset == 'svhn':
-    train_transform, valid_transform = utils._data_transforms_svhn(args)
-    train_data = dset.SVHN(root=args.data, split='train', download=True, transform=train_transform)
-
   architect = Architect(model, args)
-
-  num_train = len(train_data)
-  indices = list(range(num_train))
-  split = int(np.floor(args.train_portion * num_train))
-
-  train_queue = torch.utils.data.DataLoader(
-      train_data, batch_size=args.batch_size,
-      sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[:split]),
-      pin_memory=True, num_workers=2)
-
-  valid_queue = torch.utils.data.DataLoader(
-      train_data, batch_size=args.batch_size,
-      sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[split:num_train]),
-      pin_memory=True, num_workers=2)
 
   scheduler = CosineAnnealingLR(
         optimizer, float(args.epochs), eta_min=args.learning_rate_min)
 
   analyser = Analyzer(args, model)
+
+  train_queue, valid_queue = helper.get_train_val_loaders()
 
   if args.resume:
     if args.regularize:
@@ -287,7 +216,7 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
     param_grads = [p.grad for p in model.parameters() if p.grad is not None]
     param_grads = torch.cat([x.view(-1) for x in param_grads])
     param_grads = param_grads.cpu().data.numpy()
-    grad_norm = LA.norm(param_grads)
+    grad_norm = np.linalg.norm(param_grads)
 
     #gradient_vector = torch.cat([x.view(-1) for x in gradient_vector]) 
     #grad_norm = LA.norm(gradient_vector.cpu())
@@ -348,6 +277,6 @@ def infer(valid_queue, model, criterion):
 
 
 if __name__ == '__main__':
-  _primitives = primitives_dict[args.space]
-  analyser = main(_primitives, 1, None)
+  space = spaces_dict[args.space]
+  analyser = main(space)
 
