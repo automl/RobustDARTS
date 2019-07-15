@@ -19,7 +19,7 @@ class MixedOp(nn.Module):
         op = nn.Sequential(op, nn.BatchNorm2d(C, affine=False))
       self._ops.append(op)
 
-  def forward(self, x, weights): 
+  def forward(self, x, weights):
     return sum(w * op(x) for w, op in zip(weights, self._ops))
 
 
@@ -177,27 +177,6 @@ class Network(nn.Module):
         n += 1
       return gene
 
-    def _weakest_op(weights, normal=True):
-      PRIMITIVES = self.PRIMITIVES['primitives_normal' if normal else 'primitives_reduct']
-      k = sum(1 for i in range(self._steps) for n in range(2+i))
-      weakest_ops = []
-
-      for i in range(k):
-        weakest_ops_edge = []
-        # iterate over ops for each edge and detect the worst half of the ops
-        W = weights[i].copy()
-        W.sort()
-        worst_W = W[:len(W)//2]
-        for w in worst_W:
-          weakest_ops_edge.append(PRIMITIVES[i][list(weights[i]).index(w)])
-        weakest_ops.append(weakest_ops_edge)
-
-      return weakest_ops
-
-    weakest_ops = OrderedDict({'weakest_ops_normal': _weakest_op(F.softmax(self.alphas_normal, dim=-1).data.cpu().numpy(), True),
-                               'weakest_ops_reduce': _weakest_op(F.softmax(self.alphas_reduce, dim=-1).data.cpu().numpy(), False)
-                                })
-
     gene_normal = _parse(F.softmax(self.alphas_normal, dim=-1).data.cpu().numpy(), True)
     gene_reduce = _parse(F.softmax(self.alphas_reduce, dim=-1).data.cpu().numpy(), False)
 
@@ -206,5 +185,5 @@ class Network(nn.Module):
       normal=gene_normal, normal_concat=concat,
       reduce=gene_reduce, reduce_concat=concat
     )
-    return genotype, weakest_ops
+    return genotype
 

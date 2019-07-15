@@ -75,9 +75,10 @@ primitives_4 = OrderedDict([('primitives_normal', 14 * [['noise',
                             ('primitives_reduct', 14 * [['noise',
                                                          'sep_conv_3x3']])])
 
-spaces_dict = {'S1': primitives_1,
-               'S2': primitives_2,
-               'S3': primitives_3,
-               'S4': primitives_4,
-              }
+spaces_dict = {
+    's1': primitives_1,
+    's2': primitives_2,
+    's3': primitives_3,
+    's4': primitives_4,
+}
 

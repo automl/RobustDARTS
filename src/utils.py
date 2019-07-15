@@ -1,10 +1,16 @@
 import os
+import yaml
 import numpy as np
 import torch
 import shutil
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 from collections import namedtuple
+
+class MyDumper(yaml.Dumper):
+
+    def increase_indent(self, flow=False, indentless=False):
+        return super(MyDumper, self).increase_indent(flow, False)
 
 
 Genotype = namedtuple('Genotype', 'normal normal_concat reduce reduce_concat')
@@ -50,6 +56,37 @@ def accuracy(output, target, topk=(1,)):
     correct_k = correct[:k].view(-1).float().sum(0)
     res.append(correct_k.mul_(100.0/batch_size))
   return res
+
+
+def write_yaml_results(args, results_file, result_to_log):
+  setting = '_'.join([args.space, args.dataset])
+  regularization = '_'.join(
+      [str(args.drop_path_prob), str(args.weight_decay)]
+  )
+  results_file = os.path.join(args._save, results_file+'.yaml')
+
+  try:
+    with open(results_file, 'r') as f:
+      result = yaml.load(f)
+    if setting in result.keys():
+      if regularization in result[setting].keys():
+        result[setting][regularization].update({args.task_id: result_to_log})
+      else:
+        result[setting].update({regularization: {args.task_id: result_to_log}})
+    else:
+      result.update({setting: {regularization: {args.task_id: result_to_log}}})
+    with open(results_file, 'w') as f:
+      yaml.dump(result, f, Dumper=MyDumper, default_flow_style=False)
+  except (AttributeError, FileNotFoundError) as e:
+    result = {
+        setting: {
+            regularization: {
+                args.task_id: result_to_log
+            }
+        }
+    }
+    with open(results_file, 'w') as f:
+      yaml.dump(result, f, Dumper=MyDumper, default_flow_style=False)
 
 
 class Cutout(object):

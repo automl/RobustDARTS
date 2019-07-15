@@ -1,8 +1,11 @@
+import os
+import yaml
 import argparse
 import numpy as np
 import torch.utils
 import torchvision.datasets as dset
 
+from copy import copy
 from src import utils
 
 class Parser(object):
@@ -10,8 +13,9 @@ class Parser(object):
         parser = argparse.ArgumentParser("RobustDARTS")
 
         # general options
-        parser.add_argument('--data',                    type=str,            default='../data',   help='location of the data corpus')
-        parser.add_argument('--space',                   type=str,            default='S1',           help='space index')
+        parser.add_argument('--data',                    type=str,
+                            default='./data',   help='location of the data corpus')
+        parser.add_argument('--space',                   type=str,            default='s1',           help='space index')
         parser.add_argument('--dataset',                 type=str,            default='cifar10',      help='dataset')
         parser.add_argument('--gpu',                     type=int,            default=0,              help='gpu device id')
         parser.add_argument('--model_path',              type=str,            default='saved_models', help='path to save the model')
@@ -47,7 +51,9 @@ class Parser(object):
         parser.add_argument('--drop_path_prob',          type=float,          default=0.2,            help='drop path probability')
 
         # logging options
-        parser.add_argument('--save',                    type=str,            default='search_logs',          help='experiment name')
+        parser.add_argument('--save',                    type=str,            default='search_logs',  help='experiment name')
+        parser.add_argument('--results_file_arch',       type=str,            default='results_arch', help='filename where to write architectures')
+        parser.add_argument('--results_file_perf',       type=str,            default='results_perf', help='filename where to write val errors')
         parser.add_argument('--report_freq',             type=float,          default=50,             help='report frequency')
         parser.add_argument('--report_freq_hessian',     type=float,          default=50,             help='report frequency hessian')
 
@@ -59,15 +65,21 @@ class Helper(Parser):
     def __init__(self):
         super(Helper, self).__init__()
 
-        self.args.save = '../../{}/{}/{}/{}-{}-{}-{}'.format(self.args.save,
-                                                             self.args.space,
-                                                             self.args.dataset,
-                                                             self.args.unrolled,
-                                                             self.args.drop_path_prob,
-                                                             self.args.weight_decay,
-                                                             self.args.job_id)
+        self.args._save = copy(self.args.save)
+        self.args.save = '{}/{}/{}/{}_{}-{}'.format(self.args.save,
+                                                       self.args.space,
+                                                       self.args.dataset,
+                                                       self.args.drop_path_prob,
+                                                       self.args.weight_decay,
+                                                       self.args.job_id)
 
+        print(os.path.abspath(self.args.save))
         utils.create_exp_dir(self.args.save)
+
+        config_filename = os.path.join(self.args._save, 'config.yaml')
+        if not os.path.exists(config_filename):
+            with open(config_filename, 'w') as f:
+                yaml.dump(self.args_to_log, f, default_flow_style=False)
 
         if self.args.dataset != 'cifar100':
             self.args.n_classes = 10
@@ -78,6 +90,30 @@ class Helper(Parser):
     @property
     def config(self):
         return self.args
+
+    @property
+    def args_to_log(self):
+        list_of_args = [
+            "epochs",
+            "batch_size",
+            "learning_rate",
+            "learning_rate_min",
+            "momentum",
+            "grad_clip",
+            "train_portion",
+            "arch_learning_rate",
+            "arch_weight_decay",
+            "unrolled",
+            "init_channels",
+            "layers",
+            "nodes",
+            "cutout_length",
+            "report_freq_hessian",
+        ]
+
+        args_to_log = dict(filter(lambda x: x[0] in list_of_args,
+                                  self.args.__dict__.items()))
+        return args_to_log
 
     def get_train_val_loaders(self):
         if self.args.dataset == 'cifar10':
@@ -104,4 +140,4 @@ class Helper(Parser):
             sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[split:num_train]),
             pin_memory=True, num_workers=2)
 
-        return train_queue, valid_queue
+        return train_queue, valid_queue, train_transform, valid_transform

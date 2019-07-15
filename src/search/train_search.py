@@ -16,12 +16,12 @@ from copy import deepcopy
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
-sys.path.insert(0, '../../RobustDARTS')
+sys.path.insert(0, '../RobustDARTS')
 
 from src import utils
+from src.spaces import spaces_dict
 from src.search.model_search import Network
 from src.search.architect import Architect
-from src.spaces import spaces_dict
 from src.search.analyze import Analyzer
 from src.search.args import Helper
 
@@ -71,7 +71,7 @@ def main(primitives):
 
   analyser = Analyzer(args, model)
 
-  train_queue, valid_queue = helper.get_train_val_loaders()
+  train_queue, valid_queue, train_transform, valid_transform = helper.get_train_val_loaders()
 
   if args.resume:
     if args.regularize:
@@ -115,6 +115,9 @@ def main(primitives):
 
     return analyser
 
+  errors_dict = {'train_acc': [], 'train_loss': [], 'valid_acc': [],
+                 'valid_loss': []}
+
   for epoch in range(args.epochs):
     scheduler.step()
     lr = scheduler.get_lr()[0]
@@ -137,16 +140,18 @@ def main(primitives):
     valid_acc, valid_obj = infer(valid_queue, model, criterion)
     logging.info('valid_acc %f', valid_acc)
 
-    genotype, _ = model.genotype()
+    # update the errors dictionary
+    errors_dict['train_acc'].append(train_acc)
+    errors_dict['train_loss'].append(train_obj)
+    errors_dict['valid_acc'].append(valid_acc)
+    errors_dict['valid_loss'].append(valid_obj)
+
+    genotype = model.genotype()
 
     logging.info('genotype = %s', genotype)
 
     print(F.softmax(model.alphas_normal, dim=-1))
     print(F.softmax(model.alphas_reduce, dim=-1))
-
-    with open(os.path.join(args.save, 'ckpt_{}.txt'.format(args.task_id)), 'a') as file:
-      file.write(str(valid_acc))
-      file.write('\n')
 
     #state = {'state_dict': model.state_dict(),
     #         'optimizer': optimizer.state_dict(),
@@ -155,13 +160,18 @@ def main(primitives):
 
     #utils.save_checkpoint(state, False, args.save, args.task_id)
 
-  with open('genotypes.py', 'a') as file:
-    file.write('DARTS_%s_%s_%d_%d = %s'%(args.space,
-                                         args.dataset,
-                                         args.job_id,
-                                         args.task_id,
-                                         genotype))
-    file.write('\n')
+  with codecs.open(os.path.join(args.save,
+                                'errors_{}.json'.format(args.task_id)),
+                                'w', encoding='utf-8') as file:
+    json.dump(errors_dict, file, separators=(',', ':'))
+
+  with open(os.path.join(args.save,
+                         'arch_{}'.format(args.task_id)),
+            'w') as file:
+    file.write(str(genotype))
+
+  utils.write_yaml_results(args, args.results_file_arch, str(genotype))
+  utils.write_yaml_results(args, args.results_file_perf, 100-valid_acc)
 
   return analyser
 
@@ -213,15 +223,15 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
     target = Variable(target, requires_grad=False).cuda(async=True)
 
     # get gradient information
-    param_grads = [p.grad for p in model.parameters() if p.grad is not None]
-    param_grads = torch.cat([x.view(-1) for x in param_grads])
-    param_grads = param_grads.cpu().data.numpy()
-    grad_norm = np.linalg.norm(param_grads)
+    #param_grads = [p.grad for p in model.parameters() if p.grad is not None]
+    #param_grads = torch.cat([x.view(-1) for x in param_grads])
+    #param_grads = param_grads.cpu().data.numpy()
+    #grad_norm = np.linalg.norm(param_grads)
 
     #gradient_vector = torch.cat([x.view(-1) for x in gradient_vector]) 
     #grad_norm = LA.norm(gradient_vector.cpu())
-    logging.info('\nCurrent grad norm based on Train Dataset: %.4f',
-                 grad_norm)
+    #logging.info('\nCurrent grad norm based on Train Dataset: %.4f',
+    #             grad_norm)
 
     H = analyser.compute_Hw(input, target, input_search, target_search,
                             lr, optimizer, False)
@@ -234,7 +244,7 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
     state = {'epoch': epoch,
              'H': H.cpu().data.numpy().tolist(),
              'g': g.cpu().data.numpy().tolist(),
-             'g_train': float(grad_norm),
+             #'g_train': float(grad_norm),
              #'eig_train': eigenvalue,
             }
 
