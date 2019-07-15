@@ -141,9 +141,9 @@ def main(primitives):
     logging.info('valid_acc %f', valid_acc)
 
     # update the errors dictionary
-    errors_dict['train_acc'].append(train_acc)
+    errors_dict['train_acc'].append(100 - train_acc)
     errors_dict['train_loss'].append(train_obj)
-    errors_dict['valid_acc'].append(valid_acc)
+    errors_dict['valid_acc'].append(100 - valid_acc)
     errors_dict['valid_loss'].append(valid_obj)
 
     genotype = model.genotype()
@@ -158,11 +158,11 @@ def main(primitives):
     #         'arch_parameters': model.arch_parameters(),
     #        }
 
-    #utils.save_checkpoint(state, False, args.save, args.task_id)
+    #utils.save_checkpoint(state, False, args.save, args.task_id, None)
 
   with codecs.open(os.path.join(args.save,
                                 'errors_{}.json'.format(args.task_id)),
-                                'w', encoding='utf-8') as file:
+                   'w', encoding='utf-8') as file:
     json.dump(errors_dict, file, separators=(',', ':'))
 
   with open(os.path.join(args.save,

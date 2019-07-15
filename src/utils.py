@@ -57,6 +57,41 @@ def accuracy(output, target, topk=(1,)):
     res.append(correct_k.mul_(100.0/batch_size))
   return res
 
+def write_yaml_results_eval(args, results_file, result_to_log):
+  setting = '_'.join([args.space, args.dataset])
+  regularization = '_'.join(
+      [str(args.search_dp), str(args.search_wd)]
+  )
+  results_file = os.path.join(args._save, results_file+'.yaml')
+
+  try:
+    with open(results_file, 'r') as f:
+      result = yaml.load(f)
+    if setting in result.keys():
+      if regularization in result[setting].keys():
+        if args.search_task_id in result[setting][regularization]:
+          result[setting][regularization][args.search_task_id].append(result_to_log)
+        else:
+          result[setting][regularization].update({args.search_task_id:
+                                                 [result_to_log]})
+      else:
+        result[setting].update({regularization: {args.search_task_id:
+                                                 [result_to_log]}})
+    else:
+      result.update({setting: {regularization: {args.search_task_id:
+                                                [result_to_log]}}})
+    with open(results_file, 'w') as f:
+      yaml.dump(result, f, Dumper=MyDumper, default_flow_style=False)
+  except (AttributeError, FileNotFoundError) as e:
+    result = {
+        setting: {
+            regularization: {
+                args.search_task_id: [result_to_log]
+            }
+        }
+    }
+    with open(results_file, 'w') as f:
+      yaml.dump(result, f, Dumper=MyDumper, default_flow_style=False)
 
 def write_yaml_results(args, results_file, result_to_log):
   setting = '_'.join([args.space, args.dataset])
@@ -179,16 +214,14 @@ def count_parameters_in_MB(model):
   return np.sum(np.prod(v.size()) for v in model.parameters())/1e6
 
 
-def save_checkpoint(state, is_best, save, task_id):
-  filename = os.path.join(save, 'checkpoint_{}.pth.tar'.format(task_id))
+def save_checkpoint(state, is_best, save, search_task_id, task_id):
+  filename = "checkpoint_{}.pth.tar".format(search_task_id) if task_id is None else "checkpoint_{}_{}.pth.tar".format(search_task_id, task_id)
+
+  filename = os.path.join(save, filename)
   torch.save(state, filename)
   if is_best:
     best_filename = os.path.join(save, 'model_best.pth.tar')
     shutil.copyfile(filename, best_filename)
-
-
-def save(model, model_path):
-  torch.save(model.state_dict(), model_path)
 
 
 def load(model, model_path, genotype):
