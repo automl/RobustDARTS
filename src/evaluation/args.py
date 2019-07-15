@@ -100,7 +100,7 @@ class Helper(Parser):
             "cutout_length",
             "auxiliary",
             "auxiliary_weight",
-            "search_logs_dir",
+            "archs_config_file",
         ]
 
         args_to_log = dict(filter(lambda x: x[0] in list_of_args,
