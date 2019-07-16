@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# 2187
 datasets="cifar10 cifar100 svhn"
 spaces="s1 s2 s3 s4"
 wdecay=$(awk 'BEGIN{for(i=0.0009;i<=0.2187;i*=3)print i}')

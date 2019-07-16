@@ -37,6 +37,8 @@ class Parser(object):
         parser.add_argument('--arch_learning_rate',      type=float,          default=3e-4,           help='learning rate for arch encoding')
         parser.add_argument('--arch_weight_decay',       type=float,          default=1e-3,           help='weight decay for arch encoding')
         parser.add_argument('--unrolled',                action='store_true', default=False,          help='use one-step unrolled validation loss')
+        parser.add_argument('--early_stop',              type=int,            default=0,
+ choices=[0, 1, 2], help='early stop DARTS based on dominant eigenvalue. 0: no 1: yes 2: simulate')
 
         # one-shot model options
         parser.add_argument('--init_channels',           type=int,            default=16,             help='num of init channels')
@@ -44,7 +46,6 @@ class Parser(object):
         parser.add_argument('--nodes',                   type=int,            default=4,              help='number of intermediate nodes per cell')
 
         # augmentation options
-        parser.add_argument('--regularize',              action='store_true', default=False,          help='use co and droppath')
         parser.add_argument('--cutout',                  action='store_true', default=False,          help='use cutout')
         parser.add_argument('--cutout_length',           type=int,            default=16,             help='cutout length')
         parser.add_argument('--cutout_prob',             type=float,          default=1.0,            help='cutout probability')
@@ -86,6 +87,9 @@ class Helper(Parser):
         else:
             self.args.n_classes = 100
 
+        # set cutout to False if the drop_prob is 0
+        if self.args.drop_path_prob == 0:
+            self.args.cutout = False
 
     @property
     def config(self):

@@ -74,7 +74,7 @@ def main(primitives):
   train_queue, valid_queue, train_transform, valid_transform = helper.get_train_val_loaders()
 
   if args.resume:
-    if args.regularize:
+    if args.drop_path_prob != 0:
       model.drop_path_prob = args.drop_path_prob
       train_transform.transforms[-1].cutout_prob = args.cutout_prob
     filename = os.path.join(args.save, 'checkpoint_{}.pth.tar'.format(args.task_id))
@@ -121,7 +121,7 @@ def main(primitives):
   for epoch in range(args.epochs):
     scheduler.step()
     lr = scheduler.get_lr()[0]
-    if args.regularize:
+    if args.drop_path_prob != 0:
       model.drop_path_prob = args.drop_path_prob * epoch / (args.epochs - 1)
       train_transform.transforms[-1].cutout_prob = args.cutout_prob * epoch / (args.epochs - 1)
       logging.info('epoch %d lr %e drop_prob %e cutout_prob %e', epoch, lr,
