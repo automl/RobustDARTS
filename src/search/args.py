@@ -72,6 +72,9 @@ class Parser(object):
         parser.add_argument('--mul_factor',              type=float,
                             default=3.0,           help='multiplication factor')
 
+        # randomNAS
+        parser.add_argument('--eval_only',               action='store_true',
+                            default=False,          help='eval only')
 
         self.args = parser.parse_args()
         utils.print_args(self.args)

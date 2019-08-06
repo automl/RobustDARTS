@@ -115,13 +115,19 @@ class Network(nn.Module):
         x.data.copy_(y.data)
     return model_new
 
-  def forward(self, input):
+  def forward(self, input, discrete=False):
     s0 = s1 = self.stem(input)
     for i, cell in enumerate(self.cells):
       if cell.reduction:
-        weights = F.softmax(self.alphas_reduce, dim=-1)
+        if discrete:
+          weights = self.alphas_reduce
+        else:
+          weights = F.softmax(self.alphas_reduce, dim=-1)
       else:
-        weights = F.softmax(self.alphas_normal, dim=-1)
+        if discrete:
+          weights = self.alphas_normal
+        else:
+          weights = F.softmax(self.alphas_normal, dim=-1)
       s0, s1 = s1, cell(s0, s1, weights, self.drop_path_prob)
     out = self.global_pooling(s1)
     logits = self.classifier(out.view(out.size(0),-1))
