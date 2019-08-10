@@ -327,8 +327,11 @@ def count_parameters_in_MB(model):
   return np.sum(np.prod(v.size()) for v in model.parameters())/1e6
 
 
-def load(model, model_path, genotype):
-    pass
+def save(model, model_path):
+    torch.save(model.state_dict(), model_path)
+
+def load(model, model_path):
+    model.load_state_dict(torch.load(model_path))
 
 def save_checkpoint(state, is_best, save, epoch, task_id):
   filename = "checkpoint_{}_{}.pth.tar".format(task_id, epoch)

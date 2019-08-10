@@ -20,7 +20,7 @@ class Parser(object):
         parser.add_argument('--search_wd',               type=float,          default=3e-4,           help='weight decay used during search')
         parser.add_argument('--search_dp',               type=float,          default=0.2,            help='drop path probability used during search')
         parser.add_argument('--gpu',                     type=int,            default=0,              help='gpu device id')
-        parser.add_argument('--model_path',              type=str,            default='./checkponits',help='path to save the model')
+        parser.add_argument('--model_path',              type=str,            default=None,           help='path to save the model')
         parser.add_argument('--seed',                    type=int,            default=2,              help='random seed')
         parser.add_argument('--resume',                  action='store_true', default=False,          help='resume search')
         parser.add_argument('--debug',                   action='store_true', default=False,          help='use one-step unrolled validation loss')

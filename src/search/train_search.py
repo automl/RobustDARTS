@@ -96,7 +96,7 @@ def main(primitives):
                    errors_dict=errors_dict, start_epoch=-1):
 
     logging.info('STARTING ITERATION: %d', iteration)
-    logging.info('EPOCHS TO TRAIN: %d', epochs_to_train - start_epoch + 1)
+    logging.info('EPOCHS TO TRAIN: %d', epochs_to_train - start_epoch - 1)
 
     la_tracker.stop_search = False
 
@@ -173,7 +173,7 @@ def main(primitives):
       # limit the number of iterations based on the maximum regularization
       # value predefined by the user
       final_iteration = round(
-          np.log(args.max_weight_decay) / np.log(args.weight_decay), 1) < 1.
+          np.log(args.max_weight_decay) / np.log(args.weight_decay), 1) == 1.
 
       if la_tracker.stop_search and not final_iteration:
         if args.early_stop == 1:
