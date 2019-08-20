@@ -3,7 +3,7 @@
 # submit to the right queue
 #SBATCH -p meta_gpu-ti
 #SBATCH --gres gpu:1
-#SBATCH -a 1-3
+#SBATCH -a 1
 #SBATCH -J DARTS_grid
 #
 # the execution will use the current directory for execution (important for relative paths)
@@ -16,5 +16,5 @@
 #
 
 source activate pytorch-0.3.1-cu8-py36
-python src/search/train_search.py --unrolled --job_id $SLURM_ARRAY_JOB_ID --task_id $SLURM_ARRAY_TASK_ID --seed $SLURM_ARRAY_TASK_ID --cutout --report_freq_hessian 2 --space $1 --dataset $2 --drop_path_prob $3 --weight_decay $4
+python src/search/train_search.py --unrolled --job_id $SLURM_ARRAY_JOB_ID --task_id $SLURM_ARRAY_TASK_ID --seed $SLURM_ARRAY_TASK_ID --cutout --report_freq_hessian 2 --space $1 --dataset $2 --drop_path_prob $3 --weight_decay $4 --save search_logs_again
 

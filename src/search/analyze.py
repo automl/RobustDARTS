@@ -175,7 +175,7 @@ class Analyzer(object):
             #grad = outputs[i].contiguous().view(-1)
 
             for j in range(inp.numel()):
-                #print('(i, j): ', i, j)
+                print('(i, j): ', i, j)
                 if grad[j].requires_grad:
                     row = self.gradient(grad[j], inputs[i:], retain_graph=True)[j:]
                 else:

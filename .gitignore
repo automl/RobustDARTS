@@ -3,7 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 data/*
-logs_search/*
+logs_*/
+rebuttal_logs/*/logs_*/
 
 # C extensions
 *.so

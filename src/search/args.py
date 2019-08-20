@@ -37,8 +37,6 @@ class Parser(object):
         parser.add_argument('--arch_learning_rate',      type=float,          default=3e-4,           help='learning rate for arch encoding')
         parser.add_argument('--arch_weight_decay',       type=float,          default=1e-3,           help='weight decay for arch encoding')
         parser.add_argument('--unrolled',                action='store_true', default=False,          help='use one-step unrolled validation loss')
-        parser.add_argument('--early_stop',              type=int,            default=0,
- choices=[0, 1, 2], help='early stop DARTS based on dominant eigenvalue. 0: no 1: yes 2: simulate')
 
         # one-shot model options
         parser.add_argument('--init_channels',           type=int,            default=16,             help='num of init channels')
@@ -58,6 +56,26 @@ class Parser(object):
         parser.add_argument('--report_freq',             type=float,          default=50,             help='report frequency')
         parser.add_argument('--report_freq_hessian',     type=float,          default=50,             help='report frequency hessian')
 
+        # early stopping
+        parser.add_argument('--early_stop',              type=int,            default=0,
+ choices=[0, 1, 2, 3], help='early stop DARTS based on dominant eigenvalue. 0: no 1: yes 2: simulate')
+        parser.add_argument('--window',                  type=int,            default=5,              help='window size of the local average')
+        parser.add_argument('--es_start_epoch',          type=int,            default=10,             help='when to start considering early stopping')
+        parser.add_argument('--delta',                   type=int,            default=4,              help='number of previous local averages to consider in early stopping')
+        parser.add_argument('--factor',                  type=float,          default=1.3,            help='early stopping factor')
+        parser.add_argument('--extra_rollback_epochs',   type=int,
+                            default=5,             help='when to start considering early stopping')
+        parser.add_argument('--compute_hessian',
+                            action='store_false', default=True,          help='use cutout')
+        parser.add_argument('--max_weight_decay',        type=float,
+                            default=243e-4,           help='maximum weight decay')
+        parser.add_argument('--mul_factor',              type=float,
+                            default=3.0,           help='multiplication factor')
+
+        # randomNAS
+        parser.add_argument('--eval_only',               action='store_true',
+                            default=False,          help='eval only')
+
         self.args = parser.parse_args()
         utils.print_args(self.args)
 
@@ -68,11 +86,11 @@ class Helper(Parser):
 
         self.args._save = copy(self.args.save)
         self.args.save = '{}/{}/{}/{}_{}-{}'.format(self.args.save,
-                                                       self.args.space,
-                                                       self.args.dataset,
-                                                       self.args.drop_path_prob,
-                                                       self.args.weight_decay,
-                                                       self.args.job_id)
+                                                    self.args.space,
+                                                    self.args.dataset,
+                                                    self.args.drop_path_prob,
+                                                    self.args.weight_decay,
+                                                    self.args.job_id)
 
         print(os.path.abspath(self.args.save))
         utils.create_exp_dir(self.args.save)
