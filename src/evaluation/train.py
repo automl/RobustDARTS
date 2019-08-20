@@ -23,6 +23,8 @@ from src.utils import Genotype
 from src.evaluation.model import Network
 from src.evaluation.args import Helper
 
+TORCH_VERSION = torch.__version__
+
 
 helper = Helper()
 args = helper.config
@@ -35,6 +37,9 @@ fh = logging.FileHandler(os.path.join(args.save,
 fh.setFormatter(logging.Formatter(log_format))
 logging.getLogger().addHandler(fh)
 
+# add here torch version >= 1.0
+if TORCH_VERSION in ['1.0.1', '1.1.0']:
+    device = torch.device('cuda:{}'.format(args.gpu))
 
 def main():
   if not torch.cuda.is_available():
@@ -42,7 +47,8 @@ def main():
     sys.exit(1)
 
   np.random.seed(args.seed)
-  torch.cuda.set_device(args.gpu)
+  if TORCH_VERSION not in ['1.0.1', '1.1.0']:
+    torch.cuda.set_device(args.gpu)
   cudnn.benchmark = True
   torch.manual_seed(args.seed)
   cudnn.enabled=True
@@ -60,7 +66,10 @@ def main():
   print(arch)
   genotype = eval(arch)
   model = Network(args.init_channels, args.n_classes, args.layers, args.auxiliary, genotype)
-  model = model.cuda()
+  if TORCH_VERSION in ['1.0.1', '1.1.0']:
+    model = model.to(device)
+  else:
+    model = model.cuda()
 
   if args.model_path is not None:
     utils.load(model, args.model_path, genotype)
@@ -68,7 +77,11 @@ def main():
   logging.info("param size = %fMB", utils.count_parameters_in_MB(model))
 
   criterion = nn.CrossEntropyLoss()
-  criterion = criterion.cuda()
+  if TORCH_VERSION in ['1.0.1', '1.1.0']:
+    criterion = criterion.to(device)
+  else:
+    criterion = criterion.cuda()
+
   optimizer = torch.optim.SGD(
       model.parameters(),
       args.learning_rate,
@@ -103,11 +116,6 @@ def main():
     errors_dict['valid_acc'].append(100 - valid_acc)
     errors_dict['valid_loss'].append(valid_obj)
 
-    #state = {'state_dict': model.state_dict(),
-    #         'optimizer': optimizer.state_dict(),
-    #        }
-    #utils.save_checkpoint(state, False, args.save, args.search_task_id, args.task_id)
-
   with codecs.open(os.path.join(args.save,
                                 'errors_{}_{}.json'.format(args.search_task_id, args.task_id)),
                    'w', encoding='utf-8') as file:
@@ -122,8 +130,12 @@ def train(train_queue, model, criterion, optimizer):
   model.train()
 
   for step, (input, target) in enumerate(train_queue):
-    input = Variable(input).cuda()
-    target = Variable(target).cuda(async=True)
+    if TORCH_VERSION in ['1.0.1', '1.1.0']:
+      input = input.to(device)
+      target = target.to(device)
+    else:
+      input = Variable(input).cuda()
+      target = Variable(target).cuda(async=True)
 
     optimizer.zero_grad()
     logits, logits_aux = model(input)
@@ -132,14 +144,23 @@ def train(train_queue, model, criterion, optimizer):
       loss_aux = criterion(logits_aux, target)
       loss += args.auxiliary_weight*loss_aux
     loss.backward()
-    nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
+
+    if TORCH_VERSION in ['1.0.1', '1.1.0']:
+      nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+    else:
+      nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
     optimizer.step()
 
     prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
     n = input.size(0)
-    objs.update(loss.data[0], n)
-    top1.update(prec1.data[0], n)
-    top5.update(prec5.data[0], n)
+    if TORCH_VERSION in ['1.0.1', '1.1.0']:
+      objs.update(loss.item(), n)
+      top1.update(prec1.item(), n)
+      top5.update(prec5.item(), n)
+    else:
+      objs.update(loss.data[0], n)
+      top1.update(prec1.data[0], n)
+      top5.update(prec5.data[0], n)
 
     if step % args.report_freq == 0:
       logging.info('train %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
@@ -155,23 +176,43 @@ def infer(valid_queue, model, criterion):
   top5 = utils.AvgrageMeter()
   model.eval()
 
-  for step, (input, target) in enumerate(valid_queue):
-    input = Variable(input, volatile=True).cuda()
-    target = Variable(target, volatile=True).cuda(async=True)
+  if TORCH_VERSION in ['1.0.1', '1.1.0']:
+    with torch.no_grad():
+      for step, (input, target) in enumerate(valid_queue):
+        input = input.to(device)
+        target = target.to(device)
 
-    logits, _ = model(input)
-    loss = criterion(logits, target)
+        logits, _ = model(input)
+        loss = criterion(logits, target)
 
-    prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
-    n = input.size(0)
-    objs.update(loss.data[0], n)
-    top1.update(prec1.data[0], n)
-    top5.update(prec5.data[0], n)
+        prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
+        n = input.size(0)
+        objs.update(loss.item(), n)
+        top1.update(prec1.item(), n)
+        top5.update(prec5.item(), n)
 
-    if step % args.report_freq == 0:
-      logging.info('valid %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
-      if args.debug:
-        break
+        if step % args.report_freq == 0:
+          logging.info('valid %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
+          if args.debug:
+            break
+  else:
+    for step, (input, target) in enumerate(valid_queue):
+      input = Variable(input, volatile=True).cuda()
+      target = Variable(target, volatile=True).cuda(async=True)
+
+      logits, _ = model(input)
+      loss = criterion(logits, target)
+
+      prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
+      n = input.size(0)
+      objs.update(loss.data[0], n)
+      top1.update(prec1.data[0], n)
+      top5.update(prec5.data[0], n)
+
+      if step % args.report_freq == 0:
+        logging.info('valid %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
+        if args.debug:
+          break
 
   return top1.avg, objs.avg
 

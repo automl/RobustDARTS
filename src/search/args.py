@@ -92,7 +92,6 @@ class Helper(Parser):
                                                     self.args.weight_decay,
                                                     self.args.job_id)
 
-        print(os.path.abspath(self.args.save))
         utils.create_exp_dir(self.args.save)
 
         config_filename = os.path.join(self.args._save, 'config.yaml')
