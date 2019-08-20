@@ -1,5 +1,6 @@
 import sys
 import os
+import ast
 import shutil
 import logging
 import codecs
@@ -12,7 +13,8 @@ import numpy as np
 sys.path.append('../RobustDARTS')
 
 from src.search.randomNAS.darts_wrapper_discrete import DartsWrapper
-
+from src.search.randomNAS.parse_cnn_arch import parse_arch_to_darts
+from src import utils
 
 class Rung:
     def __init__(self, rung, nodes):
@@ -69,7 +71,7 @@ class Random_NAS:
                          'results_tmp_{}.pkl'.format(
                              self.args.task_id
                          )), os.path.join(self.save_dir,
-                                          'results_{}.pkl'.format(sefl.args.task_id))
+                                          'results_{}.pkl'.format(self.args.task_id))
         )
 
         self.model.save()
@@ -83,6 +85,8 @@ class Random_NAS:
             self.iters += 1
             if self.iters % 500 == 0:
                 self.save()
+            if (self.iters % self.args.report_freq) and self.args.debug:
+                break
 
         self.save()
         with codecs.open(os.path.join(self.args.save,
@@ -91,7 +95,7 @@ class Random_NAS:
             json.dump(errors_dict, file, separators=(',', ':'))
 
 
-    def get_eval_arch(self, rounds=None):
+    def get_eval_arch(self, rounds=None, n_samples=1000):
         #n_rounds = int(self.B / 7 / 1000)
         if rounds is None:
             n_rounds = max(1,int(self.B/10000))
@@ -100,10 +104,10 @@ class Random_NAS:
         best_rounds = []
         for r in range(n_rounds):
             sample_vals = []
-            for _ in range(1000):
+            for _ in range(n_samples):
                 arch = self.model.sample_arch()
                 try:
-                    ppl = self.model.evaluate(arch)
+                    ppl, _ = self.model.evaluate(arch)
                 except Exception as e:
                     ppl = 1000000
                 logging.info(arch)
@@ -116,7 +120,7 @@ class Random_NAS:
                 for i in range(10):
                     arch = sample_vals[i][0]
                     try:
-                        ppl = self.model.evaluate(arch, split='valid')
+                        ppl, _ = self.model.evaluate(arch, split='valid')
                     except Exception as e:
                         ppl = 1000000
                     full_vals.append((arch, ppl))
@@ -127,9 +131,19 @@ class Random_NAS:
                 best_rounds.append(sample_vals[0])
         return best_rounds
 
-def main(model):
-    args = model.args
+def main(wrapper):
+    args = wrapper.args
+    model = wrapper.model
     save_dir = args.save
+
+    try:
+        wrapper.load()
+        logging.info('loaded previously saved weights')
+    except Exception as e:
+        print(e)
+
+    logging.info("param size = %fMB", utils.count_parameters_in_MB(model))
+    logging.info('Args: {}'.format(args))
 
     if args.eval_only:
         assert save_dir is not None
@@ -139,32 +153,37 @@ def main(model):
 
     B = int(args.epochs * data_size / args.batch_size / time_steps)
 
-    searcher = Random_NAS(B, model, args.seed, save_dir)
+    searcher = Random_NAS(B, wrapper, args.seed, save_dir)
     logging.info('budget: %d' % (searcher.B))
     if not args.eval_only:
         searcher.run()
-        archs = searcher.get_eval_arch()
+        archs = searcher.get_eval_arch(args.randomnas_rounds, args.n_samples)
     else:
         np.random.seed(args.seed+1)
         archs = searcher.get_eval_arch(2)
     logging.info(archs)
-    arch = ' '.join([str(a) for a in archs[0][0]])
+    #arch = ' '.join([str(a) for a in archs[0][0]])
+    arch = str(archs[0][0])
+    arch = parse_arch_to_darts('cnn', ast.literal_eval(arch), args.space)
     with open(os.path.join(args.save, 'arch_{}'.format(args.task_id)),'w') as f:
-        f.write(arch)
+        f.write(str(arch))
+
+    logging.info(str(arch))
+    utils.write_yaml_results(args, args.results_file_arch, str(arch))
     return arch
 
 
 if __name__ == "__main__":
-    model = DartsWrapper()
+    wrapper = DartsWrapper()
 
     log_format = '%(asctime)s %(message)s'
     logging.basicConfig(stream=sys.stdout, level=logging.INFO,
         format=log_format, datefmt='%m/%d %I:%M:%S %p')
-    fh = logging.FileHandler(os.path.join(model.args.save,
-                                          'log_{}.txt'.format(model.args.task_id)))
+    fh = logging.FileHandler(os.path.join(wrapper.args.save,
+                                          'log_{}.txt'.format(wrapper.args.task_id)))
     fh.setFormatter(logging.Formatter(log_format))
     logging.getLogger().addHandler(fh)
 
-    main(model)
+    main(wrapper)
 
 

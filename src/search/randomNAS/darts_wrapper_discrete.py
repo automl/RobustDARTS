@@ -74,14 +74,6 @@ class DartsWrapper(Helper):
         model = model.cuda()
         self.model = model
 
-        try:
-            self.load()
-            logger.info('loaded previously saved weights')
-        except Exception as e:
-            print(e)
-
-        logger.info("param size = %fMB", utils.count_parameters_in_MB(model))
-
         optimizer = torch.optim.SGD(
           self.model.parameters(),
           args.learning_rate,
@@ -92,14 +84,6 @@ class DartsWrapper(Helper):
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
           optimizer, float(args.epochs), eta_min=args.learning_rate_min)
 
-        size = 0
-        for p in model.parameters():
-            size += p.nelement()
-        logger.info('param size: {}'.format(size))
-
-        total_params = sum(x.data.nelement() for x in model.parameters())
-        logger.info('Args: {}'.format(args))
-        logger.info('Model total parameters: {}'.format(total_params))
 
     def train_batch(self, arch, errors_dict):
       args = self.args
@@ -166,6 +150,8 @@ class DartsWrapper(Helper):
 
       if split is None:
         n_batches = 10
+      elif self.args.debug:
+        n_batches = 1
       else:
         n_batches = len(self.valid_queue)
 
