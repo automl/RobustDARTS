@@ -13,8 +13,7 @@ class Parser(object):
         parser = argparse.ArgumentParser("RobustDARTS")
 
         # general options
-        parser.add_argument('--data',                    type=str,
-                            default='./data',   help='location of the data corpus')
+        parser.add_argument('--data',                    type=str,            default='./data',       help='location of the data corpus')
         parser.add_argument('--space',                   type=str,            default='s1',           help='space index')
         parser.add_argument('--dataset',                 type=str,            default='cifar10',      help='dataset')
         parser.add_argument('--gpu',                     type=int,            default=0,              help='gpu device id')
@@ -50,31 +49,26 @@ class Parser(object):
         parser.add_argument('--drop_path_prob',          type=float,          default=0.2,            help='drop path probability')
 
         # logging options
-        parser.add_argument('--save',                    type=str,            default='search_logs',  help='experiment name')
+        parser.add_argument('--save',                    type=str,            default='experiments/search_logs',  help='experiment name')
         parser.add_argument('--results_file_arch',       type=str,            default='results_arch', help='filename where to write architectures')
         parser.add_argument('--results_file_perf',       type=str,            default='results_perf', help='filename where to write val errors')
         parser.add_argument('--report_freq',             type=float,          default=50,             help='report frequency')
         parser.add_argument('--report_freq_hessian',     type=float,          default=50,             help='report frequency hessian')
 
         # early stopping
-        parser.add_argument('--early_stop',              type=int,            default=0,
- choices=[0, 1, 2, 3], help='early stop DARTS based on dominant eigenvalue. 0: no 1: yes 2: simulate')
+        parser.add_argument('--early_stop',              type=int,            default=0,              choices=[0, 1, 2, 3],
+                            help='early stop DARTS based on dominant eigenvalue. 0: no 1: yes 2: simulate 3: adaptive regularization')
         parser.add_argument('--window',                  type=int,            default=5,              help='window size of the local average')
         parser.add_argument('--es_start_epoch',          type=int,            default=10,             help='when to start considering early stopping')
         parser.add_argument('--delta',                   type=int,            default=4,              help='number of previous local averages to consider in early stopping')
         parser.add_argument('--factor',                  type=float,          default=1.3,            help='early stopping factor')
-        parser.add_argument('--extra_rollback_epochs',   type=int,
-                            default=5,             help='when to start considering early stopping')
-        parser.add_argument('--compute_hessian',
-                            action='store_false', default=True,          help='use cutout')
-        parser.add_argument('--max_weight_decay',        type=float,
-                            default=243e-4,           help='maximum weight decay')
-        parser.add_argument('--mul_factor',              type=float,
-                            default=3.0,           help='multiplication factor')
+        parser.add_argument('--extra_rollback_epochs',   type=int,            default=0,              help='number of extra rollback epochs when deciding to increse regularization')
+        parser.add_argument('--compute_hessian',         action='store_false',default=True,           help='compute or not Hessian')
+        parser.add_argument('--max_weight_decay',        type=float,          default=243e-4,         help='maximum weight decay')
+        parser.add_argument('--mul_factor',              type=float,          default=3.0,            help='multiplication factor')
 
         # randomNAS
-        parser.add_argument('--eval_only',               action='store_true',
-                            default=False,          help='eval only')
+        parser.add_argument('--eval_only',               action='store_true', default=False,          help='eval only')
 
         self.args = parser.parse_args()
         utils.print_args(self.args)
@@ -130,6 +124,15 @@ class Helper(Parser):
             "nodes",
             "cutout_length",
             "report_freq_hessian",
+            "early_stop",
+            "window",
+            "es_start_epoch",
+            "delta",
+            "factor",
+            "extra_rollback_epochs",
+            "compute_hessian",
+            "mul_factor",
+            "max_weight_decay",
         ]
 
         args_to_log = dict(filter(lambda x: x[0] in list_of_args,
