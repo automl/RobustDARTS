@@ -38,7 +38,7 @@ fh.setFormatter(logging.Formatter(log_format))
 logging.getLogger().addHandler(fh)
 
 # add here torch version >= 1.0
-if TORCH_VERSION in ['1.0.1', '1.1.0']:
+if TORCH_VERSION.startswith('1'):
     device = torch.device('cuda:{}'.format(args.gpu))
 
 def main():
@@ -47,7 +47,7 @@ def main():
     sys.exit(1)
 
   np.random.seed(args.seed)
-  if TORCH_VERSION not in ['1.0.1', '1.1.0']:
+  if TORCH_VERSION.startswith('1'):
     torch.cuda.set_device(args.gpu)
   cudnn.benchmark = True
   torch.manual_seed(args.seed)
@@ -66,7 +66,7 @@ def main():
   print(arch)
   genotype = eval(arch)
   model = Network(args.init_channels, args.n_classes, args.layers, args.auxiliary, genotype)
-  if TORCH_VERSION in ['1.0.1', '1.1.0']:
+  if TORCH_VERSION.startswith('1'):
     model = model.to(device)
   else:
     model = model.cuda()
@@ -77,7 +77,7 @@ def main():
   logging.info("param size = %fMB", utils.count_parameters_in_MB(model))
 
   criterion = nn.CrossEntropyLoss()
-  if TORCH_VERSION in ['1.0.1', '1.1.0']:
+  if TORCH_VERSION.startswith('1'):
     criterion = criterion.to(device)
   else:
     criterion = criterion.cuda()
@@ -145,7 +145,7 @@ def train(train_queue, model, criterion, optimizer):
       loss += args.auxiliary_weight*loss_aux
     loss.backward()
 
-    if TORCH_VERSION in ['1.0.1', '1.1.0']:
+    if TORCH_VERSION.startswith('1'):
       nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
     else:
       nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
@@ -153,7 +153,7 @@ def train(train_queue, model, criterion, optimizer):
 
     prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
     n = input.size(0)
-    if TORCH_VERSION in ['1.0.1', '1.1.0']:
+    if TORCH_VERSION.startswith('1'):
       objs.update(loss.item(), n)
       top1.update(prec1.item(), n)
       top5.update(prec5.item(), n)
@@ -176,7 +176,7 @@ def infer(valid_queue, model, criterion):
   top5 = utils.AvgrageMeter()
   model.eval()
 
-  if TORCH_VERSION in ['1.0.1', '1.1.0']:
+  if TORCH_VERSION.startswith('1'):
     with torch.no_grad():
       for step, (input, target) in enumerate(valid_queue):
         input = input.to(device)

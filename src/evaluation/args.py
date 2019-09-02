@@ -49,8 +49,8 @@ class Parser(object):
         parser.add_argument('--drop_path_prob',          type=float,          default=0.2,            help='drop path probability')
 
         # logging options
-        parser.add_argument('--save',                    type=str,            default='eval_logs',    help='log directory name')
-        parser.add_argument('--archs_config_file',       type=str,            default='./search_logs/results_arch.yaml', help='search logs directory')
+        parser.add_argument('--save',                    type=str,            default='experiments/eval_logs',    help='log directory name')
+        parser.add_argument('--archs_config_file',       type=str,            default='./experiments/search_logs/results_arch.yaml', help='search logs directory')
         parser.add_argument('--results_test',            type=str,            default='results_perf', help='filename where to write test errors')
         parser.add_argument('--report_freq',             type=float,          default=50,             help='report frequency')
 
