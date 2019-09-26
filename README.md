@@ -1,6 +1,6 @@
 # RobustDARTS
 Code accompanying the paper:
-> [Understanding and Robustifying Differentiable Architecture Search](https://128.84.21.199/pdf/1909.09656.pdf)\
+> [Understanding and Robustifying Differentiable Architecture Search](https://arxiv.org/abs/1909.09656)\
 > Arber Zela, Thomas Elsken, Tonmoy Saikia, Yassine Marrakchi, Thomas Brox and Frank Hutter.\
 > _arXiv:1909.09656_.
 
