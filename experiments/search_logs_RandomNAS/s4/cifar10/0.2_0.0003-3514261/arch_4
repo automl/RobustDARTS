@@ -1,0 +1,1 @@
+Genotype(normal=[('noise', 1), ('sep_conv_3x3', 0), ('sep_conv_3x3', 1), ('sep_conv_3x3', 2), ('noise', 0), ('noise', 1), ('noise', 3), ('sep_conv_3x3', 1)], normal_concat=[2, 3, 4, 5], reduce=[('noise', 1), ('sep_conv_3x3', 0), ('sep_conv_3x3', 0), ('noise', 1), ('sep_conv_3x3', 0), ('noise', 2), ('sep_conv_3x3', 2), ('sep_conv_3x3', 3)], reduce_concat=[2, 3, 4, 5])

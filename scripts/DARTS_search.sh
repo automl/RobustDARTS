@@ -10,8 +10,8 @@
 #SBATCH -D .
 #
 # redirect the output/error to some files
-#SBATCH -o ./logs_search/%A_%a.o
-#SBATCH -e ./logs_search/%A_%a.e
+#SBATCH -o ./experiments/cluster_logs/%A_%a.o
+#SBATCH -e ./experiments/cluster_logs/%A_%a.e
 #
 #
 
