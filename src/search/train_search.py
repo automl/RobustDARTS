@@ -240,6 +240,14 @@ def main(primitives):
               epochs_to_train - start_again_epoch - 1
           )
 
+          if iteration == 1:
+              logging.info(
+                  '(ADA) Saving the architecture at the early stop epoch and '
+                  'continuing with the adaptive regularization strategy'
+              )
+              utils.write_yaml_results(args, 'early_'+args.results_file_arch,
+                                       str(simulated_genotype))
+
           del model
           del architect
           del optimizer

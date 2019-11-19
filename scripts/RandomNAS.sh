@@ -3,7 +3,7 @@
 # submit to the right queue
 #SBATCH -p meta_gpu-ti
 #SBATCH --gres gpu:1
-#SBATCH -a 4
+#SBATCH -a 1-3
 #SBATCH -J RandomNAS
 #
 # the execution will use the current directory for execution (important for relative paths)
