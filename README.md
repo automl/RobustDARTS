@@ -12,6 +12,15 @@ The code is basically based on the original [DARTS implementation](https://githu
 Python >= 3.5.5, PyTorch == 0.3.1, torchvision == 0.2.0
 ```
 
+As we show in our paper, DARTS will start assigning a large weight to skip connections as the search progresses, while at the same time the dominant eigenvalue of the validation loss Hessian starts increasing.
+
+<p align="center">
+<img src="img/test_eig.gif" alt="test_error_eigenvalues" width="80%">
+</p>
+<p align="center">
+Figure: Snapshot of the normal cells and dominant eigenvalue of the Hessian of the validation loss w.r.t. the architectural parameters over time.
+</p>
+
 ## Architecture search 
 To carry out the DARTS (2nd order) architecture search on all search spaces and datasets used throughout the paper, run:
 ```
@@ -40,6 +49,7 @@ Make sure to set `--archs_config_file` to the correct `.yaml` file where the arc
 
 
 ## Citation
+```
 @inproceedings{zela-arxiv19a,
 	author = {A. Zela and T. Elsken and T. Saikia and Y. Marrakchi and T. Brox and F. Hutter},
 	journal = {arXiv:1909.09656 [cs.LG]},
@@ -48,3 +58,4 @@ Make sure to set `--archs_config_file` to the correct `.yaml` file where the arc
 	url = {https://arxiv.org/abs/1905.07443},
 	year = {2019}
 }
+```
