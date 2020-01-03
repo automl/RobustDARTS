@@ -158,7 +158,7 @@ def main(primitives):
 
       utils.save_checkpoint(state, False, args.save, epoch, args.task_id)
 
-      if args.compute_hessian:
+      if not args.compute_hessian:
         ev = -1
       else:
         ev = la_tracker.ev[-1]
