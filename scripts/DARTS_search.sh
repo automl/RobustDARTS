@@ -8,6 +8,8 @@
 #SBATCH -J DARTS_grid
 #SBATCH -D .
 
+#SBATCH -o ./experiments/cluster_logs/%A_%a.o
+#SBATCH -e ./experiments/cluster_logs/%A_%a.e
 export PATH=/vol/bitbucket/${USER}/miniconda3/bin/:$PATH
 source activate
 source /vol/cuda/10.0.130/setup.sh
