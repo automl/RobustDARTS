@@ -2,8 +2,6 @@
 #
 # submit to the right queue
 #SBATCH --gres gpu:1
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=<your_username>
 #SBATCH -a 1-3
 #SBATCH -J DARTS_grid
 #SBATCH -D .

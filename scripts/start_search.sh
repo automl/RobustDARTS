@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ys3316
 datasets="cifar10 cifar100 svhn"
 spaces="s1 s2 s3 s4"
 wdecay=$(awk 'BEGIN{for(i=0.0003;i<=0.0243;i*=3)print i}')
