@@ -16,5 +16,6 @@ source /vol/cuda/10.0.130/setup.sh
 TERM=vt100
 /usr/bin/nvidia-smi
 uptime
+echo $1 $2 $3 $4
 python src/search/train_search.py --unrolled --job_id $SLURM_ARRAY_JOB_ID --task_id $SLURM_ARRAY_TASK_ID --seed $SLURM_ARRAY_TASK_ID --cutout --report_freq_hessian 2 --space $1 --dataset $2 --drop_path_prob $3 --weight_decay $4
 
