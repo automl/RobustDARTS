@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 # submit to the right queue
-#SBATCH -p meta_gpu-ti
 #SBATCH --gres gpu:1
 #SBATCH -a 1-3
 #SBATCH -J DARTS_grid_eval

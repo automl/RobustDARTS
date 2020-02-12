@@ -58,7 +58,8 @@ def main():
 
   # load search configuration file holding the found architectures
   configuration = '_'.join([args.space, args.dataset])
-  settings = '_'.join([str(args.search_dp), str(args.search_wd)])
+  settings\
+    = '_'.join([str(args.search_dp), str(args.search_wd)])
   with open(args.archs_config_file, 'r') as f:
     cfg = yaml.load(f)
     arch = dict(cfg)[configuration][settings][args.search_task_id]
