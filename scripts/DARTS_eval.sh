@@ -13,6 +13,11 @@
 #SBATCH -e ./experiments/cluster_logs/%A_%a.e
 #
 
-source activate pytorch-0.3.1-cu8-py36
+export PATH=/vol/bitbucket/${USER}/miniconda3/bin/:$PATH
+source activate
+source /vol/cuda/10.0.130/setup.sh
+TERM=vt100
+/usr/bin/nvidia-smi
+uptime
 python src/evaluation/train.py --cutout --auxiliary --job_id $SLURM_ARRAY_JOB_ID --task_id 1 --seed 1 --space $1 --dataset $2 --search_dp $3 --search_wd $4 --search_task_id $SLURM_ARRAY_TASK_ID
 

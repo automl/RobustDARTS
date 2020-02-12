@@ -141,7 +141,8 @@ def main(primitives):
       print(F.softmax(model.alphas_normal, dim=-1))
       print(F.softmax(model.alphas_reduce, dim=-1))
 
-      state = {'state_dict': model.state_dict(),
+      state = {
+               'state_dict': model.state_dict(),
                'optimizer': optimizer.state_dict(),
                'alphas_normal': model.alphas_normal.data,
                'alphas_reduce': model.alphas_reduce.data,

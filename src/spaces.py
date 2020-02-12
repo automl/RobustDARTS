@@ -2,7 +2,6 @@ from collections import OrderedDict
 
 
 
-
 primitives_1 = OrderedDict([('primitives_normal', [['skip_connect',
                                                     'dil_conv_3x3'],
                                                     ['skip_connect',
@@ -77,6 +76,8 @@ primitives_4 = OrderedDict([('primitives_normal', 14 * [['noise',
                             ('primitives_reduct', 14 * [['noise',
                                                          'sep_conv_3x3']])])
 
+primitives_6 = OrderedDict([('primitives_normal', 14 * [['sep_conv_3x3']]),
+                            ('primitives_reduct', 14 * [['sep_conv_3x3']])])
 PRIMITIVES = [
     #'none',
     'max_pool_3x3',
@@ -97,5 +98,6 @@ spaces_dict = {
     's3': primitives_3,
     's4': primitives_4,
     's5': primitives_5, # original DARTS space
+    's6': primitives_6
 }
 
