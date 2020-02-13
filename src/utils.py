@@ -281,6 +281,26 @@ def _data_transforms_svhn(args):
   return train_transform, valid_transform
 
 
+def _data_transforms_mnist(args):
+  MNIST_MEAN = [0.5, 0.5, 0.5]
+  MNIST_STD = [0.5, 0.5, 0.5]
+
+  train_transform = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize(MNIST_MEAN, MNIST_STD),
+  ])
+  if args.cutout:
+    train_transform.transforms.append(Cutout(args.cutout_length,
+                                      args.cutout_prob))
+
+  valid_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(MNIST_MEAN, MNIST_STD),
+    ])
+  return train_transform, valid_transform
+
 def _data_transforms_cifar100(args):
   CIFAR_MEAN = [0.5071, 0.4865, 0.4409]
   CIFAR_STD = [0.2673, 0.2564, 0.2762]

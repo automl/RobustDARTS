@@ -151,6 +151,9 @@ class Helper(Parser):
         elif self.args.dataset == 'svhn':
             train_transform, valid_transform = utils._data_transforms_svhn(self.args)
             train_data = dset.SVHN(root=self.args.data, split='train', download=True, transform=train_transform)
+        elif self.args.dataset == 'mnist':
+            train_transform, valid_transform = utils._data_transforms_mnist(self.args)
+            train_data = dset.MNIST(root=self.args.data, split='train', download=True, transform=train_transform)
 
         num_train = len(train_data)
         indices = list(range(num_train))
