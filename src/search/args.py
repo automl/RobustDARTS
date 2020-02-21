@@ -9,6 +9,7 @@ src_folder_path = os.path.dirname(sys.path[0])
 robustdarts_path = os.path.dirname(src_folder_path)
 project_path = os.path.dirname(robustdarts_path)
 sys.path.append(os.path.join(project_path,'DR_Detection', 'dataset'))
+print(sys.path)
 from dataset import ImageLabelDataset, loadImageToTensor
 
 from copy import copy
