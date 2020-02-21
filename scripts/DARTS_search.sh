@@ -5,6 +5,8 @@
 #SBATCH -a 1-3
 #SBATCH -J DARTS_grid
 #SBATCH -D .
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ys3316
 
 export PATH=/vol/bitbucket/${USER}/miniconda3/bin/:$PATH
 source activate

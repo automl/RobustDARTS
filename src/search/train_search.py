@@ -337,6 +337,8 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
   top1 = utils.AvgrageMeter()
   top5 = utils.AvgrageMeter()
 
+  for i in train_queue:
+      print(i)
   for step, (input, target) in enumerate(train_queue):
     model.train()
     n = input.size(0)
