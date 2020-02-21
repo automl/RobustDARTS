@@ -11,6 +11,7 @@ src_path = os.path.dirname(search_folder_path)
 robustdarts_path = os.path.dirname(src_path)
 project_path = os.path.dirname(robustdarts_path)
 dataset_path = os.path.join(project_path, 'DR_Detection', 'dataset')
+data_path = os.path.join(project_path, 'DR_Detection', 'data')
 sys.path.append(dataset_path)
 print(sys.path)
 from dataset import ImageLabelDataset, loadImageToTensor
@@ -83,8 +84,8 @@ class Parser(object):
         parser.add_argument('--n_samples',               type=int,            default=1000,           help='number of discrete architectures to sample during eval')
 
         # medical data file paths
-        parser.add_argument('--valid_files',               type=str,            default=dataset_path + '/test_public_df.csv',           help='path to the csv file that contain validation images')
-        parser.add_argument('--train_files',               type=str,            default=dataset_path + '/train_all_df.csv',           help='path to the csv file that contain train images')
+        parser.add_argument('--valid_files',               type=str,            default=data_path + '/test_public_df.csv',           help='path to the csv file that contain validation images')
+        parser.add_argument('--train_files',               type=str,            default=data_path + '/train_all_df.csv',           help='path to the csv file that contain train images')
 
         self.args = parser.parse_args()
         utils.print_args(self.args)
