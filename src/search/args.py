@@ -5,10 +5,11 @@ import numpy as np
 import torch.utils
 import torchvision.datasets as dset
 import sys
-src_folder_path = os.path.dirname(sys.path[0])
+FILE_ABSOLUTE_PATH = os.path.abspath(__file__)
+src_folder_path = os.path.dirname(FILE_ABSOLUTE_PATH)
 robustdarts_path = os.path.dirname(src_folder_path)
 project_path = os.path.dirname(robustdarts_path)
-sys.path.append(os.path.join(project_path,'DR_Detection', 'dataset'))
+sys.path.append(os.path.join(project_path, 'DR_Detection', 'dataset'))
 print(sys.path)
 from dataset import ImageLabelDataset, loadImageToTensor
 
