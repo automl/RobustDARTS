@@ -7,6 +7,7 @@ import torchvision.datasets as dset
 import sys
 FILE_ABSOLUTE_PATH = os.path.abspath(__file__)
 search_folder_path = os.path.dirname(FILE_ABSOLUTE_PATH)
+src_path = os.path.dirname(search_folder_path)
 robustdarts_path = os.path.dirname(src_folder_path)
 project_path = os.path.dirname(robustdarts_path)
 sys.path.append(os.path.join(project_path, 'DR_Detection', 'dataset'))
