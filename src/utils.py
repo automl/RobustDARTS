@@ -280,8 +280,55 @@ def _data_transforms_svhn(args):
     ])
   return train_transform, valid_transform
 
+def _data_transforms_dr_detection(args):
+  DR_DETECTION_MEAN = [0.42, 0.22, 0.075]
+  DR_DETECTION_STD = [0.27, 0.15, 0.081]
+
+  train_transform = transforms.Compose([
+      transforms.Resize(540),  # 256
+      transforms.RandomRotation((-45.0, +45.0)),
+      transforms.RandomResizedCrop(512, scale=(0.9, 1.1), ratio=(0.9, 1.1)),  # 224
+      transforms.RandomHorizontalFlip(),
+      transforms.RandomVerticalFlip(),
+      transforms.ColorJitter(brightness=0.1, contrast=[0.75, 1.5],
+                             saturation=[0.75, 1.5], hue=0.15),
+      transforms.ToTensor(),
+      transforms.Normalize(mean=DR_DETECTION_MEAN, std=DR_DETECTION_STD),
+      # transforms.RandomErasing(),
+  ])
+  if args.cutout:
+    train_transform.transforms.append(Cutout(args.cutout_length,
+                                      args.cutout_prob))
+
+  valid_transform = transforms.Compose([
+        transforms.Resize(540),
+        transforms.CenterCrop(512),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=DR_DETECTION_MEAN, std=DR_DETECTION_STD),
+    ])
+  return train_transform, valid_transform
 
 def _data_transforms_mnist(args):
+  MNIST_MEAN = [0.5, 0.5, 0.5]
+  MNIST_STD = [0.5, 0.5, 0.5]
+
+  train_transform = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize(MNIST_MEAN, MNIST_STD),
+  ])
+  if args.cutout:
+    train_transform.transforms.append(Cutout(args.cutout_length,
+                                      args.cutout_prob))
+
+  valid_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(MNIST_MEAN, MNIST_STD),
+    ])
+  return train_transform, valid_transform
+
+def _data_transforms_dr_detection(args):
   MNIST_MEAN = [0.5, 0.5, 0.5]
   MNIST_STD = [0.5, 0.5, 0.5]
 

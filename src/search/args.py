@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import torch.utils
 import torchvision.datasets as dset
+from .....DR-Detection.dataset.dataset import ImageLabelDataset, loadImageToTensor
 
 from copy import copy
 from src import utils
@@ -71,6 +72,10 @@ class Parser(object):
         parser.add_argument('--eval_only',               action='store_true', default=False,          help='eval only')
         parser.add_argument('--randomnas_rounds',        type=int,            default=None,           help='number of evaluation rounds in RandomNAS')
         parser.add_argument('--n_samples',               type=int,            default=1000,           help='number of discrete architectures to sample during eval')
+
+        # medical data file paths
+        parser.add_argument('--valid_files',               type=str,            default='../../DR-Detection/data/test_public_df.csv',           help='path to the csv file that contain validation images')
+        parser.add_argument('--train_files',               type=str,            default='../../DR-Detection/data/train_all_df.csv',           help='path to the csv file that contain train images')
 
         self.args = parser.parse_args()
         utils.print_args(self.args)
@@ -145,16 +150,36 @@ class Helper(Parser):
         if self.args.dataset == 'cifar10':
             train_transform, valid_transform = utils._data_transforms_cifar10(self.args)
             train_data = dset.CIFAR10(root=self.args.data, train=True, download=True, transform=train_transform)
+            valid_data = train_data
         elif self.args.dataset == 'cifar100':
             train_transform, valid_transform = utils._data_transforms_cifar100(self.args)
             train_data = dset.CIFAR100(root=self.args.data, train=True, download=True, transform=train_transform)
+            valid_data = train_data
         elif self.args.dataset == 'svhn':
             train_transform, valid_transform = utils._data_transforms_svhn(self.args)
             train_data = dset.SVHN(root=self.args.data, split='train', download=True, transform=train_transform)
+            valid_data = train_data
         elif self.args.dataset == 'mnist':
             train_transform, valid_transform = utils._data_transforms_mnist(self.args)
             train_data = dset.MNIST(root=self.args.data, split='train', download=True, transform=train_transform)
+            valid_data = train_data
+        elif self.args.dataset == 'dr-detection':
+            # ###########################################################################
+            # # load validation data and apply transforms
+            # ###########################################################################
 
+            # if self.args.distributed:
+            #     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+            # else:
+            #train_sampler = None
+            train_transform, valid_transform = utils._data_transforms_dr_detection(self.args)
+            labels = {0: 'No DR', 1: 'Mild DR', 2: 'Moderate DR', 3: 'Severe DR', 4: 'Poliferative DR'}
+            train_data = ImageLabelDataset(csv=self.args.train_files,
+                                                  transform=train_transform,
+                                                  label_names=labels)
+            valid_data = ImageLabelDataset(csv=self.args.valid_files,
+                                                  transform=valid_transform,
+                                                  label_names=labels)
         num_train = len(train_data)
         indices = list(range(num_train))
         split = int(np.floor(self.args.train_portion * num_train))
@@ -165,7 +190,7 @@ class Helper(Parser):
             pin_memory=True, num_workers=2)
 
         valid_queue = torch.utils.data.DataLoader(
-            train_data, batch_size=self.args.batch_size,
+            valid_data, batch_size=self.args.batch_size,
             sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[split:num_train]),
             pin_memory=True, num_workers=2)
 
