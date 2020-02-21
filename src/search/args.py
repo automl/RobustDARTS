@@ -82,8 +82,8 @@ class Parser(object):
         parser.add_argument('--n_samples',               type=int,            default=1000,           help='number of discrete architectures to sample during eval')
 
         # medical data file paths
-        parser.add_argument('--valid_files',               type=str,            default='../../DR-Detection/data/test_public_df.csv',           help='path to the csv file that contain validation images')
-        parser.add_argument('--train_files',               type=str,            default='../../DR-Detection/data/train_all_df.csv',           help='path to the csv file that contain train images')
+        parser.add_argument('--valid_files',               type=str,            default='../../../DR-Detection/data/test_public_df.csv',           help='path to the csv file that contain validation images')
+        parser.add_argument('--train_files',               type=str,            default='../../../DR-Detection/data/train_all_df.csv',           help='path to the csv file that contain train images')
 
         self.args = parser.parse_args()
         utils.print_args(self.args)
