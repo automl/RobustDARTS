@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import torch.utils
 import torchvision.datasets as dset
-from .....DR-Detection.dataset.dataset import ImageLabelDataset, loadImageToTensor
+from .....DR\-Detection.dataset.dataset import ImageLabelDataset, loadImageToTensor
 
 from copy import copy
 from src import utils
