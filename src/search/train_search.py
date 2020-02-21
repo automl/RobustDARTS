@@ -337,12 +337,12 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
   top1 = utils.AvgrageMeter()
   top5 = utils.AvgrageMeter()
 
-  # count = 0
-  # for i in train_queue:
-  #     print(i)
-  #     count += 1
-  #     if count == 2:
-  #         break
+  count = 0
+  for i in train_queue:
+      print(i)
+      count += 1
+      if count == 2:
+          break
   for step, input_target in enumerate(train_queue):
     if args.dataset == 'dr-detection':
         input = input_target['image']
