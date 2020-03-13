@@ -78,7 +78,7 @@ primitives_4 = OrderedDict([('primitives_normal', 14 * [['noise',
                                                          'sep_conv_3x3']])])
 
 PRIMITIVES = [
-    #'none',
+    'none',
     'max_pool_3x3',
     'avg_pool_3x3',
     'skip_connect',
