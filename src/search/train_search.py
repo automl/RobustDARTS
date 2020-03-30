@@ -129,10 +129,10 @@ def main(primitives):
       logging.info('valid_acc %f', valid_acc)
 
       # update the errors dictionary
-      errors_dict['train_acc'].append(100 - train_acc)
-      errors_dict['train_loss'].append(train_obj)
-      errors_dict['valid_acc'].append(100 - valid_acc)
-      errors_dict['valid_loss'].append(valid_obj)
+      errors_dict['train_acc'].append(100 - train_acc.item())
+      errors_dict['train_loss'].append(train_obj.item())
+      errors_dict['valid_acc'].append(100 - valid_acc.item())
+      errors_dict['valid_loss'].append(valid_obj.item())
 
       genotype = model.genotype()
 
