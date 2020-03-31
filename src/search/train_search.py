@@ -328,7 +328,7 @@ def main(primitives):
     file.write(str(genotype))
 
   utils.write_yaml_results(args, args.results_file_arch, str(genotype))
-  utils.write_yaml_results(args, args.results_file_perf, 100-valid_acc)
+  utils.write_yaml_results(args, args.results_file_perf, 100-valid_acc.item())
 
   with open(os.path.join(args.save,
                          'schedule_{}.pickle'.format(args.task_id)),
