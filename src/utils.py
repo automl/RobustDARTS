@@ -179,7 +179,7 @@ def write_yaml_results_eval(args, results_file, result_to_log):
 
   try:
     with open(results_file, 'r') as f:
-      result = yaml.load(f)
+      result = yaml.load(f, Loader=yaml.Loader)
     if setting in result.keys():
       if regularization in result[setting].keys():
         if args.search_task_id in result[setting][regularization]:
