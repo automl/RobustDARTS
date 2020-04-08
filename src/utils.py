@@ -215,7 +215,7 @@ def write_yaml_results(args, results_file, result_to_log):
 
   try:
     with open(results_file, 'r') as f:
-      result = yaml.load(f)
+      result = yaml.load(f, Loader=yaml.Loader)
     if setting in result.keys():
       if regularization in result[setting].keys():
         result[setting][regularization].update({args.task_id: result_to_log})
