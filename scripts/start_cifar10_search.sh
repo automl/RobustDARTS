@@ -10,8 +10,8 @@ TERM=vt100 # or TERM=xterm
 /usr/bin/nvidia-smi
 uptime
 datasets="cifar10"
-spaces="s1 s2 s3 s4"
-#spaces="s1"
+#spaces="s1 s2 s3 s4"
+spaces="s1"
 wdecay=$(awk 'BEGIN{for(i=0.0003;i<=0.0243;i*=7)print i}')
 dpath=$(awk 'BEGIN{for(j=0.0;j<=0.6;j+=0.2)print j}')
 
