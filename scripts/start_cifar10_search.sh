@@ -16,10 +16,12 @@ wdecay=$(awk 'BEGIN{for(i=0.0003;i<=0.0243;i*=7)print i}')
 dpath=$(awk 'BEGIN{for(j=0.0;j<=0.6;j+=0.2)print j}')
 
 
-for d in $datasets; do
-  for s in $spaces; do
-		sbatch scripts/DARTS_search.sh $s $d 0.0121 0.4
-		echo submmited job $s $d 0.0121 0.4
-  done
-done
+#for d in $datasets; do
+#  for s in $spaces; do
+#		sbatch scripts/DARTS_search.sh $s $d 0.0121 0.4
+#		echo submmited job $s $d 0.0121 0.4
+#  done
+#done
 
+sbatch scripts/DARTS_search.sh s1 cifar10 0.0121 0.4
+echo submmited job s1 cifar10 0.0121 0.4
