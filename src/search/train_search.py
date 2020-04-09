@@ -347,7 +347,7 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
   for step, input_target in enumerate(train_queue):
     if args.dataset == 'dr-detection':
         input = input_target['image']
-        target = input_target['label_hot']
+        target = input_target['label']
     else:
         input = input_target[0]
         target = input_target[1]
@@ -363,7 +363,7 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
         iterable = iter(valid_queue)
         valid_datum = next(iterable)
         input_search = valid_datum['image']
-        target_search = valid_datum['label_hot']
+        target_search = valid_datum['label']
       else:
         input_search, target_search = next(iter(valid_queue))
       input_search = Variable(input_search, requires_grad=False).cuda()
