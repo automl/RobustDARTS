@@ -87,11 +87,6 @@ class DartsWrapper(Helper):
 
     def train_batch(self, arch, errors_dict):
       args = self.args
-      if self.steps % len(self.train_queue) == 0:
-        self.scheduler.step()
-        self.objs = utils.AvgrageMeter()
-        self.top1 = utils.AvgrageMeter()
-        self.top5 = utils.AvgrageMeter()
       lr = self.scheduler.get_lr()[0]
 
       weights = self.get_weights_from_arch(arch)
@@ -114,6 +109,12 @@ class DartsWrapper(Helper):
       loss.backward()
       nn.utils.clip_grad_norm(self.model.parameters(), args.grad_clip)
       self.optimizer.step()
+
+      if self.steps % len(self.train_queue) == 0:
+        self.scheduler.step()
+        self.objs = utils.AvgrageMeter()
+        self.top1 = utils.AvgrageMeter()
+        self.top5 = utils.AvgrageMeter()
 
       prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
       self.objs.update(loss.data[0], n)
