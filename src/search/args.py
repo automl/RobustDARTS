@@ -194,14 +194,28 @@ class Helper(Parser):
         indices = list(range(num_train))
         split = int(np.floor(self.args.train_portion * num_train))
 
-        train_queue = torch.utils.data.DataLoader(
-            train_data, batch_size=self.args.batch_size,
-            sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[:split]),
-            pin_memory=True, num_workers=2)
 
-        valid_queue = torch.utils.data.DataLoader(
-            valid_data, batch_size=self.args.batch_size,
-            sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[split:num_train]),
-            pin_memory=True, num_workers=2)
+
+        if self.args.dataset == 'dr-detection':
+            train_queue = torch.utils.data.DataLoader(
+                train_data, batch_size=self.args.batch_size,
+                sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[:split]),
+                pin_memory=True, num_workers=2)
+
+            random_sampler = torch.utils.data.sampler.RandomSampler(valid_data)
+            valid_queue = torch.utils.data.DataLoader(
+                valid_data, batch_size=self.args.batch_size,
+                sampler=random_sampler,
+                pin_memory=True, num_workers=2)
+        else:
+            train_queue = torch.utils.data.DataLoader(
+                train_data, batch_size=self.args.batch_size,
+                sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[:split]),
+                pin_memory=True, num_workers=2)
+
+            valid_queue = torch.utils.data.DataLoader(
+                valid_data, batch_size=self.args.batch_size,
+                sampler=torch.utils.data.sampler.SubsetRandomSampler(indices[split:num_train]),
+                pin_memory=True, num_workers=2)
 
         return train_queue, valid_queue, train_transform, valid_transform
