@@ -315,10 +315,6 @@ def main(primitives):
   with codecs.open(os.path.join(args.save,
                                 'errors_{}.json'.format(args.task_id)),
                    'w', encoding='utf-8') as file:
-    print("logging errors_dict on line 318. should be dictionary")
-    print("type of errors_dict: ")
-    print(type(errors_dict))
-    print(errors_dict)
 
     json.dump(errors_dict, file, separators=(',', ':'))
 
