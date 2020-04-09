@@ -135,7 +135,7 @@ class Network(nn.Module):
 
   def _loss(self, input, target):
     logits = self(input)
-    return self._criterion(logits, target)
+    return self._criterion(logits, target.long())
 
   def _initialize_alphas(self):
     k = sum(1 for i in range(self._steps) for n in range(2+i))
