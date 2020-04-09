@@ -364,11 +364,9 @@ def train(epoch, primitives, train_queue, valid_queue, model, architect,
     if architect is not None:
       # get a random minibatch from the search queue with replacement
       if args.dataset == 'dr-detection':
-        iterable = iter(valid_queue)
-        print(iterable)
-        valid_datum = next(iterable)
+        valid_datum = valid_queue[0]
         input_search = valid_datum['image']
-        target_search = valid_datum['label_hot']
+        target_search = valid_datum['label_hot'].cuda()
       else:
         input_search, target_search = next(iter(valid_queue))
       input_search = Variable(input_search, requires_grad=False).cuda()
