@@ -10,7 +10,7 @@ TERM=vt100 # or TERM=xterm
 /usr/bin/nvidia-smi
 uptime
 
-python src/search/train_search.py --unrolled --train_portion 0.1 --cutout --report_freq_hessian 2 --space s1 --dataset dr-detection --drop_path_prob 0.2 --weight_decay 0.0121
+python src/search/train_search.py --unrolled --train_portion 1.0 --cutout --report_freq_hessian 2 --space s1 --dataset dr-detection --drop_path_prob 0.2 --weight_decay 0.0121
 
 #datasets="dr-detection"
 #spaces="s1 s2 s3 s4"
