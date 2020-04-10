@@ -453,7 +453,15 @@ def infer(valid_queue, model, criterion):
   top5 = utils.AvgrageMeter()
   model.eval()
 
-  for step, (input, target) in enumerate(valid_queue):
+
+  for step, input_target in enumerate(valid_queue):
+    if args.dataset == 'dr-detection':
+        input = input_target['image']
+        target = input_target['label']
+    else:
+        input = input_target[0]
+        target = input_target[1]
+
     input = Variable(input, volatile=True).cuda()
     target = Variable(target, volatile=True).cuda()
 
