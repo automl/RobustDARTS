@@ -285,9 +285,9 @@ def _data_transforms_dr_detection(args):
   DR_DETECTION_STD = [0.27, 0.15, 0.081]
 
   train_transform = transforms.Compose([
-      transforms.Resize(64),  # 256
+      transforms.Resize(256),  # 256
       transforms.RandomRotation((-45.0, +45.0)),
-      transforms.RandomResizedCrop(32, scale=(0.9, 1.1), ratio=(0.9, 1.1)),  # 224
+      transforms.RandomResizedCrop(224, scale=(0.9, 1.1), ratio=(0.9, 1.1)),  # 224
       transforms.RandomHorizontalFlip(),
       transforms.RandomVerticalFlip(),
       transforms.ColorJitter(brightness=0.1, contrast=[0.75, 1.5],
@@ -301,8 +301,8 @@ def _data_transforms_dr_detection(args):
                                       args.cutout_prob))
 
   valid_transform = transforms.Compose([
-        transforms.Resize(64),
-        transforms.CenterCrop(32),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=DR_DETECTION_MEAN, std=DR_DETECTION_STD),
     ])
