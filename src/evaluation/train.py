@@ -112,17 +112,17 @@ def main():
     logging.info('valid_acc %f', valid_acc)
 
     # update the errors dictionary
-    errors_dict['train_acc'].append(100 - train_acc)
-    errors_dict['train_loss'].append(train_obj)
-    errors_dict['valid_acc'].append(100 - valid_acc)
-    errors_dict['valid_loss'].append(valid_obj)
+    errors_dict['train_acc'].append(100 - train_acc.item())
+    errors_dict['train_loss'].append(train_obj.item())
+    errors_dict['valid_acc'].append(100 - valid_acc.item())
+    errors_dict['valid_loss'].append(valid_obj.item())
 
   with codecs.open(os.path.join(args.save,
                                 'errors_{}_{}.json'.format(args.search_task_id, args.task_id)),
                    'w', encoding='utf-8') as file:
     json.dump(errors_dict, file, separators=(',', ':'))
 
-  utils.write_yaml_results_eval(args, args.results_test, 100-valid_acc)
+  utils.write_yaml_results_eval(args, args.results_test, 100-valid_acc.item())
 
 def train(train_queue, model, criterion, optimizer):
   objs = utils.AvgrageMeter()
