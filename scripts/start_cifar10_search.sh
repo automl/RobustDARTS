@@ -34,5 +34,5 @@ uptime
 #SBATCH -J DARTS_grid
 #SBATCH -D .
 #python src/search/train_search.py --unrolled --job_id $SLURM_ARRAY_JOB_ID --task_id $SLURM_ARRAY_TASK_ID --seed $SLURM_ARRAY_TASK_ID --train_portion 0.1 --cutout --report_freq_hessian 2 --space s1 --dataset cifar10 --drop_path_prob 0.2 --weight_decay 0.0121
-python src/search/train_search.py --unrolled --cutout --report_freq_hessian 2 --space s1 --dataset cifar10 --drop_path_prob 0.2 --weight_decay 0.0121
+python src/search/train_search.py --unrolled --cutout --report_freq_hessian 2 --space s1 --dataset cifar10 --drop_path_prob 0.8 --weight_decay 0.2187
 
