@@ -133,7 +133,15 @@ def train(train_queue, model, criterion, optimizer):
   top5 = utils.AvgrageMeter()
   model.train()
 
-  for step, (input, target) in enumerate(train_queue):
+  for step, input_target in enumerate(train_queue):
+
+    if args.dataset == 'dr-detection':
+        input = input_target['image']
+        target = input_target['label']
+    else:
+        input = input_target[0]
+        target = input_target[1]
+
     if TORCH_VERSION in ['1.0.1', '1.1.0']:
       input = input.to(device)
       target = target.to(device)
