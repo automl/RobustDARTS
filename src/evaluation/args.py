@@ -4,6 +4,17 @@ import argparse
 import numpy as np
 import torch.utils
 import torchvision.datasets as dset
+import sys
+FILE_ABSOLUTE_PATH = os.path.abspath(__file__)
+search_folder_path = os.path.dirname(FILE_ABSOLUTE_PATH)
+src_path = os.path.dirname(search_folder_path)
+robustdarts_path = os.path.dirname(src_path)
+project_path = os.path.dirname(robustdarts_path)
+dataset_path = os.path.join(project_path, 'DR_Detection', 'dataset')
+data_path = os.path.join(project_path, 'DR_Detection', 'data')
+sys.path.append(dataset_path)
+print(sys.path)
+from dataset import ImageLabelDataset, loadImageToTensor
 
 from copy import copy
 from src import utils
@@ -77,10 +88,12 @@ class Helper(Parser):
             with open(config_filename, 'w') as f:
                 yaml.dump(self.args_to_log, f, default_flow_style=False)
 
-        if self.args.dataset != 'cifar100':
-            self.args.n_classes = 10
-        else:
+        if self.args.dataset == 'cifar100':
             self.args.n_classes = 100
+        elif self.args.dataset == 'dr-detection':
+            self.args.n_classes = 5
+        else:
+            self.args.n_classes = 10
 
 
     @property
@@ -126,13 +139,31 @@ class Helper(Parser):
                 root=self.args.data, split='train', download=True, transform=train_transform)
             valid_data = dset.SVHN(
                 root=self.args.data, split='test', download=True, transform=valid_transform)
+        elif self.args.dataset == 'dr-detection':
+            train_transform, valid_transform = utils._data_transforms_dr_detection(self.args)
+            labels = {0: 'No DR', 1: 'Mild DR', 2: 'Moderate DR', 3: 'Severe DR', 4: 'Poliferative DR'}
+            train_data = ImageLabelDataset(csv=self.args.train_files,
+                                                  transform=train_transform,
+                                                  label_names=labels)
+            valid_data = ImageLabelDataset(csv=self.args.valid_files,
+                                                  transform=valid_transform,
+                                                  label_names=labels)
 
-        train_queue = torch.utils.data.DataLoader(
-            train_data, batch_size=self.args.batch_size,
-            shuffle=True, pin_memory=True, num_workers=2)
+        if self.args.dataset == 'dr-detection':
+            train_queue = torch.utils.data.DataLoader(
+                train_data, batch_size=self.args.batch_size,
+                sampler=True, pin_memory=True, num_workers=2)
 
-        valid_queue = torch.utils.data.DataLoader(
-            valid_data, batch_size=self.args.batch_size,
-            shuffle=False, pin_memory=True, num_workers=2)
+            valid_queue = torch.utils.data.DataLoader(
+                valid_data, batch_size=self.args.batch_size,
+                sampler=True, pin_memory=True, num_workers=2)
+        else:
+            train_queue = torch.utils.data.DataLoader(
+                train_data, batch_size=self.args.batch_size,
+                shuffle=True, pin_memory=True, num_workers=2)
+
+            valid_queue = torch.utils.data.DataLoader(
+                valid_data, batch_size=self.args.batch_size,
+                shuffle=False, pin_memory=True, num_workers=2)
 
         return train_queue, valid_queue, train_transform, valid_transform
