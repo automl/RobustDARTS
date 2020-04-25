@@ -65,6 +65,10 @@ class Parser(object):
         parser.add_argument('--results_test',            type=str,            default='results_perf', help='filename where to write test errors')
         parser.add_argument('--report_freq',             type=float,          default=50,             help='report frequency')
 
+        # medical data file paths
+        parser.add_argument('--valid_files', type=str, default=data_path + '/test_public_df.csv',    help='path to the csv file that contain validation images')
+        parser.add_argument('--train_files', type=str, default=data_path + '/train_all_df.csv',      help='path to the csv file that contain train images')
+
         self.args = parser.parse_args()
         utils.print_args(self.args)
 
