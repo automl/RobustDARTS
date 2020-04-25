@@ -57,7 +57,10 @@ def main():
   logging.info("args = %s", args)
 
   # load search configuration file holding the found architectures
-  configuration = '_'.join([args.space, args.dataset])
+  if args.dataset != 'dr-detection':
+    configuration = '_'.join([args.space, args.dataset])
+  else:
+    configuration = '_'.join([args.space, 'cifar10'])
   settings\
     = '_'.join([str(args.search_dp), str(args.search_wd)])
   with open(args.archs_config_file, 'r') as f:
