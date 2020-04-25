@@ -156,11 +156,11 @@ class Helper(Parser):
         if self.args.dataset == 'dr-detection':
             train_queue = torch.utils.data.DataLoader(
                 train_data, batch_size=self.args.batch_size,
-                sampler=True, pin_memory=True, num_workers=2)
+                sampler=torch.utils.data.sampler.RandomSampler(train_data), pin_memory=True, num_workers=2)
 
             valid_queue = torch.utils.data.DataLoader(
                 valid_data, batch_size=self.args.batch_size,
-                sampler=True, pin_memory=True, num_workers=2)
+                sampler=torch.utils.data.sampler.RandomSampler(valid_data), pin_memory=True, num_workers=2)
         else:
             train_queue = torch.utils.data.DataLoader(
                 train_data, batch_size=self.args.batch_size,
