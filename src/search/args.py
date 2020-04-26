@@ -4,17 +4,21 @@ import argparse
 import numpy as np
 import torch.utils
 import torchvision.datasets as dset
+import random
 import sys
 FILE_ABSOLUTE_PATH = os.path.abspath(__file__)
 search_folder_path = os.path.dirname(FILE_ABSOLUTE_PATH)
 src_path = os.path.dirname(search_folder_path)
 robustdarts_path = os.path.dirname(src_path)
 project_path = os.path.dirname(robustdarts_path)
-dataset_path = os.path.join(project_path, 'DR_Detection', 'dataset')
-data_path = os.path.join(project_path, 'DR_Detection', 'data')
-sys.path.append(dataset_path)
+dr_detection_dataset_path = os.path.join(project_path, 'DR_Detection', 'dataset')
+dr_detection_data_path = os.path.join(project_path, 'DR_Detection', 'data')
+malaria_dataset_path = os.path.join(project_path, 'cell_images')
+sys.path.append(dr_detection_dataset_path)
+sys.path.append(malaria_dataset_path)
 print(sys.path)
 from dataset import ImageLabelDataset, loadImageToTensor
+from malaria_dataset import MalariaImageLabelDataset
 
 from copy import copy
 from src import utils
@@ -83,10 +87,6 @@ class Parser(object):
         parser.add_argument('--randomnas_rounds',        type=int,            default=None,           help='number of evaluation rounds in RandomNAS')
         parser.add_argument('--n_samples',               type=int,            default=1000,           help='number of discrete architectures to sample during eval')
 
-        # medical data file paths
-        parser.add_argument('--valid_files',               type=str,            default=data_path + '/test_public_df.csv',           help='path to the csv file that contain validation images')
-        parser.add_argument('--train_files',               type=str,            default=data_path + '/train_all_df.csv',           help='path to the csv file that contain train images')
-
         self.args = parser.parse_args()
         utils.print_args(self.args)
 
@@ -110,10 +110,14 @@ class Helper(Parser):
             with open(config_filename, 'w') as f:
                 yaml.dump(self.args_to_log, f, default_flow_style=False)
 
-        if self.args.dataset != 'cifar100':
-            self.args.n_classes = 10
-        else:
+        if self.args.dataset == 'cifar100':
             self.args.n_classes = 100
+        elif self.args.dataset == 'dr-detection':
+            self.args.n_classes = 5
+        elif self.args.dataset == 'malaria':
+            self.args.n_classes = 2
+        else:
+            self.args.n_classes = 10
 
         # set cutout to False if the drop_prob is 0
         if self.args.drop_path_prob == 0:
@@ -174,27 +178,19 @@ class Helper(Parser):
             train_data = dset.MNIST(root=self.args.data, split='train', download=True, transform=train_transform)
             valid_data = train_data
         elif self.args.dataset == 'dr-detection':
-            # ###########################################################################
-            # # load validation data and apply transforms
-            # ###########################################################################
-
-            # if self.args.distributed:
-            #     train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-            # else:
-            #train_sampler = None
+            valid_files = dr_detection_data_path + '/test_public_df.csv'
+            train_files = dr_detection_data_path + '/train_all_df.csv'
             train_transform, valid_transform = utils._data_transforms_dr_detection(self.args)
             labels = {0: 'No DR', 1: 'Mild DR', 2: 'Moderate DR', 3: 'Severe DR', 4: 'Poliferative DR'}
-            train_data = ImageLabelDataset(csv=self.args.train_files,
-                                                  transform=train_transform,
-                                                  label_names=labels)
-            valid_data = ImageLabelDataset(csv=self.args.valid_files,
-                                                  transform=valid_transform,
-                                                  label_names=labels)
+            train_data = ImageLabelDataset(csv=train_files, transform=train_transform, label_names=labels)
+            valid_data = ImageLabelDataset(csv=valid_files, transform=valid_transform, label_names=labels)
+        elif self.args.dataset == 'malaria':
+            train_transform, valid_transform = utils._data_transforms_malaria(self.args)
+            train_data = MalariaImageLabelDataset(transform=train_transform)
+            valid_data = train_data
         num_train = len(train_data)
-        indices = list(range(num_train))
+        indices = random.sample(range(num_train), num_train)
         split = int(np.floor(self.args.train_portion * num_train))
-
-
 
         if self.args.dataset == 'dr-detection':
             train_queue = torch.utils.data.DataLoader(

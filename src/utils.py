@@ -308,6 +308,22 @@ def _data_transforms_dr_detection(args):
     ])
   return train_transform, valid_transform
 
+def _data_transforms_malaria(args):
+
+  train_transform = transforms.Compose([
+      transforms.Resize(256),  # 256
+      transforms.RandomRotation((-45.0, +45.0)),
+  ])
+  if args.cutout:
+    train_transform.transforms.append(Cutout(args.cutout_length,
+                                      args.cutout_prob))
+
+  valid_transform = transforms.Compose([
+        transforms.Resize(50),
+        transforms.RandomRotation((-45.0, +45.0)),
+    ])
+  return train_transform, valid_transform
+
 def _data_transforms_mnist(args):
   MNIST_MEAN = [0.5, 0.5, 0.5]
   MNIST_STD = [0.5, 0.5, 0.5]
