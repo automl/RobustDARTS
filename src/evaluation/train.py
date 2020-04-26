@@ -57,10 +57,10 @@ def main():
   logging.info("args = %s", args)
 
   # load search configuration file holding the found architectures
-  if args.dataset != 'dr-detection':
-    configuration = '_'.join([args.space, args.dataset])
-  else:
+  if args.dataset == 'dr-detection':
     configuration = '_'.join([args.space, 'cifar10'])
+  else:
+    configuration = '_'.join([args.space, args.dataset])
   settings\
     = '_'.join([str(args.search_dp), str(args.search_wd)])
   with open(args.archs_config_file, 'r') as f:
@@ -190,9 +190,14 @@ def infer(valid_queue, model, criterion):
 
   if TORCH_VERSION.startswith('1'):
     with torch.no_grad():
-      for step, (input, target) in enumerate(valid_queue):
-        input = input.to(device)
-        target = target.to(device)
+      for step, input_target in enumerate(valid_queue):
+
+        if args.dataset == 'dr-detection':
+          input = input_target['image']
+          target = input_target['label']
+        else:
+          input = input_target[0]
+          target = input_target[1]
 
         logits, _ = model(input)
         loss = criterion(logits, target)
