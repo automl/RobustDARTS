@@ -199,6 +199,13 @@ def infer(valid_queue, model, criterion):
           input = input_target[0]
           target = input_target[1]
 
+        if TORCH_VERSION in ['1.0.1', '1.1.0']:
+          input = input.to(device)
+          target = target.to(device)
+        else:
+          input = Variable(input).cuda()
+          target = Variable(target).cuda()
+
         logits, _ = model(input)
         loss = criterion(logits, target)
 
