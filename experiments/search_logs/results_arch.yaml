@@ -20,10 +20,10 @@ s1_cifar10:
       6))
   0.0_0.0009:
     1: Genotype(normal=[('skip_connect', 1), ('skip_connect', 0), ('skip_connect',
-      1), ('skip_connect', 0), ('skip_connect', 3), ('skip_connect', 0), ('skip_connect',
-      2), ('skip_connect', 1)], normal_concat=range(2, 6), reduce=[('max_pool_3x3',
-      1), ('max_pool_3x3', 0), ('max_pool_3x3', 0), ('max_pool_3x3', 1), ('skip_connect',
-      2), ('skip_connect', 3), ('skip_connect', 3), ('skip_connect', 2)], reduce_concat=range(2,
+      1), ('skip_connect', 2), ('skip_connect', 3), ('skip_connect', 2), ('skip_connect',
+      2), ('dil_conv_3x3', 3)], normal_concat=range(2, 6), reduce=[('max_pool_3x3',
+      1), ('max_pool_3x3', 0), ('skip_connect', 2), ('max_pool_3x3', 0), ('skip_connect',
+      2), ('skip_connect', 3), ('skip_connect', 3), ('max_pool_3x3', 0)], reduce_concat=range(2,
       6))
     2: Genotype(normal=[('skip_connect', 1), ('skip_connect', 0), ('skip_connect',
       1), ('skip_connect', 0), ('skip_connect', 1), ('skip_connect', 2), ('skip_connect',
