@@ -389,3 +389,25 @@ def print_args(args):
     for arg, val in args.__dict__.items():
         print(arg + '.' * (50 - len(arg) - len(str(val))) + str(val))
     print()
+
+
+def get_one_hot(alphas):
+    start = 0
+    n = 2
+
+    one_hot = torch.zeros(alphas.shape)
+
+    for i in range(4):
+        end = start + n
+        w = torch.nn.functional.softmax(alphas[start:end],
+                                        dim=-1).data.cpu().numpy().copy()
+        edges = sorted(range(i+2), key=lambda x: -max(w[x][k] for k in range(len(w[x]))))[:2]
+        for j in edges:
+            k_best = None
+            for k in range(len(w[j])):
+                if k_best is None or w[j][k] > w[j][k_best]:
+                    k_best = k
+            one_hot[start+j][k_best] = 1
+        start = end
+        n += 1
+    return one_hot
