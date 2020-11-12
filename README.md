@@ -23,33 +23,33 @@ Figure: Snapshot of the normal cells and dominant eigenvalue of the Hessian of t
 
 ## Architecture search 
 To carry out the DARTS (2nd order) architecture search on all search spaces and datasets used throughout the paper, run:
-```
+```sh
 ./scripts/start_search.sh
 ```
 > NOTE: We used the [Slurm Workload Manager](https://slurm.schedmd.com/) environment to run our jobs, but it can be easily adapted to other job scheduling systems.
 
 
 To carry out the DARTS-ADA and DARTS-ES (2nd order) architecture search on all search spaces and datasets, run:
-```
+```sh
 ./scripts/start_search_ADA.sh
 ```
 Since, DARTS-ES and DARTS-ADA work with the same stopping criterion, we do not need to run them separately, but instead we just start DARTS-ADA and log the architectures after the first rollback iteration, supposing that DARTS would early stop, and then continue with the adapting regularization.
 
 To start Random Search with Weight Sharing on all search spaces and datasets used throughout the paper, run:
-```
+```sh
 ./scripts/start_search_RandomNAS.sh
 ```
 
 ## Architecture evaluation
 To start evaluating all the architectures logged by the search runs, run:
-```
+```sh
 ./scripts/start_eval.sh
 ```
 Make sure to set `--archs_config_file` to the correct `.yaml` file where the architecture genotypes are saved.
 
 
 ## Citation
-```
+```bibtex
 @inproceedings{zela2020understanding,
 	title={Understanding and Robustifying Differentiable Architecture Search},
 	author={Arber Zela and Thomas Elsken and Tonmoy Saikia and Yassine Marrakchi and Thomas Brox and Frank Hutter},
